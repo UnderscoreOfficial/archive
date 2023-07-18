@@ -1,0 +1,76 @@
+/** @format */
+
+.tabs.container {
+  margin-top: 75px;
+  margin-bottom: 75px;
+  display: flex;
+  justify-content: center;
+}
+
+.home_tabs {
+  all: unset;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 0;
+  border-radius: 10px;
+  box-shadow: 0px 6px 16px 0px rgb(0 0 0 / 40%);
+}
+
+.home_tabs .home_tab {
+  all: unset;
+  display: flex;
+  padding: 17px 20px;
+  justify-content: center;
+  background-color: rgb(50, 50, 50);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  transition: background-color 120ms ease-in-out, color 120ms ease-in-out;
+}
+
+.home_tabs .home_tab:hover {
+  background-color: rgb(40, 40, 40);
+  color: rgb(200, 200, 200);
+  cursor: pointer;
+}
+
+.home_tabs .home_tab:active {
+  background-color: rgb(43, 43, 43);
+  color: rgb(255, 255, 255);
+}
+
+.home_tabs .new_episodes {
+  border-radius: 10px 0 0 10px;
+}
+
+.home_tabs .can_rewatch {
+  border-radius: 0 10px 10px 0;
+}
+
+.home_tabs .active {
+  background-color: rgb(35, 35, 35);
+  color: rgb(100, 100, 100);
+  pointer-events: none;
+}
+
+@media (max-width: 680px) {
+  .tabs.container {
+    margin-top: 50px;
+    margin-bottom: 35px;
+  }
+
+  .home_tabs {
+    grid-template-columns: unset;
+    grid-template-rows: repeat(3, 1fr);
+    white-space: nowrap;
+    min-width: 80%;
+    box-shadow: unset;
+  }
+
+  .home_tabs .home_tab {
+    margin-bottom: 15px;
+    border-radius: 10px;
+    box-shadow: 0px 6px 14px 0px rgb(0 0 0 / 40%);
+  }
+}

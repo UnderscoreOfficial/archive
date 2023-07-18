@@ -1,0 +1,232 @@
+/** @format */
+
+nav .nav_container {
+  display: flex;
+  background-color: rgb(50, 50, 50);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  margin: 0;
+  padding: 0;
+  z-index: 50;
+  -webkit-box-shadow: 0px 8px 16px 0px rgb(0 0 0 / 20%);
+  box-shadow: 0px 8px 16px 0px rgb(0 0 0 / 20%);
+  justify-content: space-between;
+}
+
+nav .nav_items {
+  display: flex;
+}
+
+nav li {
+  all: unset;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.header {
+  fill: white;
+  transition: background-color 0.15s, color 0.15s, fill 0.15s;
+}
+
+.header:hover {
+  background-color: rgb(40, 40, 40);
+  color: rgb(215, 215, 215);
+  fill: rgb(215, 215, 215);
+  cursor: pointer;
+}
+
+.header:active {
+  background-color: rgb(43, 43, 43);
+  color: rgb(255, 255, 255);
+  fill: rgb(255, 255, 255);
+}
+
+.caret-down-svg.active {
+  fill: rgb(215, 215, 215);
+}
+
+nav a,
+nav button {
+  all: unset;
+  font-weight: 500;
+  font-size: larger;
+  letter-spacing: 1px;
+  padding: 19px;
+}
+
+/* dropdown */
+.nav_dropdown {
+  position: relative;
+  overflow: visible;
+}
+
+.nav_dropdown_items {
+  visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  padding: 0;
+  opacity: 0;
+  top: 70px;
+  left: 0px;
+  transform: translateY(-15px);
+  transition: opacity 125ms ease-in-out, transform 150ms ease-in-out;
+  box-shadow: 0px 8px 16px 0px rgb(0 0 0 / 20%);
+  pointer-events: none;
+}
+
+.nav_dropdown_items li {
+  background-color: rgb(50, 50, 50);
+  color: rgb(255, 255, 255);
+}
+
+.nav_dropdown_items .top {
+  border-radius: 5px 5px 0 0;
+}
+
+.nav_dropdown_items .bottom {
+  border-radius: 0 0 5px 5px;
+}
+
+.nav_dropdown_items li:hover {
+  background-color: rgb(40, 40, 40);
+  color: rgb(215, 215, 215);
+}
+
+.nav_dropdown_items li:active {
+  background-color: rgb(43, 43, 43);
+  color: rgb(255, 255, 255);
+}
+
+.nav_dropdown_items a {
+  width: 100%;
+}
+
+.nav_dropdown_items.active {
+  opacity: 1;
+  transform: translateY(0px);
+  pointer-events: auto;
+}
+
+.nav_dropdown.active {
+  background-color: rgb(40, 40, 40);
+  color: rgb(215, 215, 215);
+}
+
+.hamburger {
+  display: none;
+  pointer-events: none;
+  padding: 30px 15px 25px 25px;
+  font-size: 20px;
+  fill: white;
+  transition: fill 125ms ease-in-out;
+}
+
+.home_page {
+  display: none;
+}
+
+@media (max-width: 680px) {
+  .hamburger {
+    display: flex;
+    pointer-events: auto;
+  }
+
+  .hamburger:hover {
+    fill: rgb(200, 200, 200);
+  }
+
+  .hamburger:active {
+    fill: rgb(235, 235, 235);
+  }
+
+  .nav_items {
+    visibility: hidden;
+    pointer-events: none;
+    position: fixed;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: 60px;
+    background-color: rgb(40, 40, 40);
+    opacity: 0;
+    transform: translateY(-15px);
+    transition: opacity 125ms ease-in-out, transform 150ms ease-in-out;
+  }
+
+  .header {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .header:hover,
+  .nav_dropdown_items li:hover {
+    background-color: rgb(32, 32, 32);
+    color: rgb(200, 200, 200);
+  }
+
+  .header:active,
+  .nav_dropdown_items li:active {
+    background-color: rgb(45, 45, 45);
+    color: rgb(255, 255, 255);
+  }
+
+  .home_page {
+    display: flex;
+  }
+
+  .nav_dropdown_items {
+    position: fixed;
+    top: 180px;
+    left: 0;
+    right: 0;
+    opacity: 1;
+    box-shadow: 0px 16px 16px 0px rgb(0 0 0 / 20%);
+  }
+
+  .nav_dropdown_items li {
+    background-color: rgb(40, 40, 40);
+    color: rgb(255, 255, 255);
+  }
+
+  nav a {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  nav button {
+    display: none;
+  }
+
+  .nav_dropdown_items .top {
+    border-radius: 0;
+  }
+
+  .nav_dropdown_items .bottom {
+    border-radius: 0;
+  }
+}
+
+.hamburger_visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0px);
+}
+
+.nav_dropdown_items_pointer {
+  pointer-events: auto;
+}
+
+.nav_items_visibility {
+  visibility: visible;
+}
+
+.nav_dropdown_items_visibility {
+  visibility: visible;
+}

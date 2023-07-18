@@ -1,0 +1,51 @@
+<nav>
+    <ul class="nav_container">
+        <div class="home_page">
+            <li class="header">
+                <a href="{% url 'home' 'new-episodes' %}">Archive</a>
+            </li>
+        </div>
+        <div class="nav_items">
+            <li class="header archive">
+                <a href="{% url 'home' 'new-episodes' %}">Archive</a>
+            </li>
+            <li class="header">
+                <a href="{% url 'search' %}">Search</a>
+            </li>
+            <li class="header">
+                <a href="{% url 'stats' %}">Stats</a>
+            </li>
+            <li class="nav_dropdown header">
+                <button class="nav_dropdown_button">
+                    Add
+                    <i class="nav_dropdown_button caret-down-svg">
+                        <svg class="nav_dropdown_button"
+                             xmlns="http://www.w3.org/2000/svg"
+                             viewBox="0 0 320 512"
+                             width="12">
+                            <path class="nav_dropdown_button" d="M137.4 374.6c12.5 12.5 32.8 12.5 45.3 0l128-128c9.2-9.2 11.9-22.9 6.9-34.9s-16.6-19.8-29.6-19.8L32 192c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9l128 128z"/>
+                        </svg>
+                    </i>
+                </button>
+                <ul class="nav_dropdown_items">
+                    <li class="top">
+                        <a href="{% url 'add_movie' %}">Movie</a>
+                    </li>
+                    <li class="middle">
+                        <a href="{% url 'add_tv_show' %}">Tv-Show</a>
+                    </li>
+                    <li class="bottom">
+                        <a href="{% url 'add_unacquired_content' %}">Unacquired</a>
+                    </li>
+                </ul>
+            </li>
+        </div>
+        <li class="hamburger hamburger_click">
+            <svg class="hamburger_click" viewBox="0 0 100 80" width="40" height="40">
+                <rect class="hamburger_click" width="80" height="9" rx="4"></rect>
+                <rect class="hamburger_click" y="30" width="80" height="9" rx="4"></rect>
+                <rect class="hamburger_click" y="60" width="80" height="9" rx="4"></rect>
+            </svg>
+        </li>
+    </ul>
+</nav>

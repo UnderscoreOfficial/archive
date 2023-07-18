@@ -1,0 +1,258 @@
+/** @format */
+
+/* hiding and transition */
+.toggle {
+  height: 0;
+  opacity: 0.25;
+  transition: 250ms ease-in-out;
+}
+
+.toggle.active {
+  display: block;
+  transition: 250ms ease-in-out;
+  opacity: 1;
+}
+
+/* modal shadow background*/
+.modal-shadow {
+  position: fixed;
+  z-index: 150;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  visibility: hidden;
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0, 0, 0); /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.3); /* Black w/ opacity */
+}
+
+/* The Modal (background) */
+.modal {
+  position: fixed; /* Stay in place */
+  margin-top: 125px; /* Location of the box */
+  z-index: 150;
+  top: -110%;
+  left: 0;
+  right: 0; /* Full height */
+  overflow: visible; /* Enable scroll if needed */
+  transition: top 0.4s;
+  display: flex;
+  justify-content: center;
+}
+
+.modal.show {
+  top: 0;
+}
+
+.modal-inside-container {
+  justify-content: center;
+  flex: 1;
+  max-width: 60%;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.6), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  border-radius: 7px;
+  background-color: rgb(50, 50, 50);
+}
+
+.modal-inside-container .audio-tracks {
+  max-height: 435px;
+  overflow: scroll;
+  padding: 15px 15px 0px 15px;
+}
+
+/* darker background behind element */
+.modal-content-background {
+  background-color: rgb(40, 40, 40);
+  border-radius: 14px;
+  padding: 10px;
+  margin: 10px;
+}
+
+/* Modal Content */
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  vertical-align: middle;
+}
+
+.modal-content h2 {
+  margin: 30px;
+  text-align: center;
+}
+
+/* The Close Button */
+.action-close {
+  position: absolute;
+  right: 5px;
+  top: -5px;
+  color: white;
+  font-size: 28px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.action-close:hover,
+.action-close:focus {
+  color: rgb(150, 45, 45);
+}
+
+.action-close:active {
+  color: rgb(195, 45, 45);
+}
+
+.action-cancel,
+.action-confirm {
+  margin: 10px 10px;
+}
+
+.audio-tracks {
+  display: grid;
+}
+
+.audio-tracks span {
+  background-color: rgb(40, 40, 40);
+  border-radius: 14px;
+  font-size: 22px;
+  padding: 15px;
+}
+
+.audio-tracks span:hover {
+  box-shadow: 0px 2px 4px 2px rgb(0 0 0 / 40%);
+  color: rgb(240, 240, 240);
+}
+
+.audio-tracks span:active {
+  background-color: rgb(35, 35, 35);
+  color: white;
+}
+
+.audio-tracks span:not(:first-of-type) {
+  margin-top: 15px;
+}
+
+.audio-tracks.verify-name {
+  overflow: unset;
+  max-height: unset;
+  padding: 15px;
+  position: relative;
+}
+
+.verify-name div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background-color: rgb(40, 40, 40);
+  border-radius: 14px;
+}
+
+.verify-name div p {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  margin: 25px 15px 0px 10px;
+  text-align: center;
+  background-color: rgb(50, 50, 50);
+  border-radius: 5px;
+  padding: 5px;
+}
+
+.verify-name div div {
+  /* /* display: flex; */
+  flex-direction: row;
+  width: 100%;
+}
+
+.verify-name div div div {
+  max-width: 32%;
+}
+
+.verify-name .background {
+  background-color: rgb(50, 50, 50);
+  border-radius: 5px;
+  padding: 5px;
+  font-size: 22px;
+  display: inline-block;
+  margin-left: 8px;
+}
+
+.verify-name .background input {
+  min-width: 50px;
+}
+
+.verify-name div div div label a {
+  all: unset;
+  color: rgb(195, 195, 195);
+  transition: color 115ms ease-in-out;
+  font-size: 25px;
+  font-weight: 900;
+  text-align: right;
+  display: inline-block;
+  width: 100px;
+}
+
+.verify-name div div div label a:hover {
+  color: rgba(99, 160, 219);
+}
+
+.verify-name div div div label a:active {
+  color: rgb(120, 180, 240);
+}
+
+.verify-name div div button {
+  margin: 25px 0px 25px 10px;
+}
+
+.verify-name .loading-svg {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}
+
+#verify-current-name {
+  color: rgb(65, 169, 221);
+  box-shadow: 0px 2px 8px 2px rgb(0 0 0 / 10%);
+}
+
+#verify-new-name {
+  color: rgb(98, 223, 152);
+}
+
+@media (width < 238px) {
+  .action-cancel,
+  .action-confirm {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@media (width < 380px) {
+  .action-close {
+    display: none;
+  }
+}
+
+@media (width < 663px) {
+  .modal-inside-container {
+    scale: 0.9;
+    max-width: none;
+  }
+}
+
+@media (663px < width < 883px) {
+  .modal-inside-container {
+    scale: 0.95;
+    min-width: 80%;
+  }
+}
+
+@media (1670px < width) {
+  .modal-inside-container {
+    max-width: 1000px;
+  }
+}

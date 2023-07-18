@@ -1,0 +1,340 @@
+{% extends "main.html" %}
+{% load static %}
+{% block head %}
+    <link rel="stylesheet" href="{% static "css/detail/tv_show_detail.css" %}" type="text/css" />
+    <style>
+            .save-button,
+            .season_save_button {
+                background-image: url("{% static "svg/floppy-disk-solid.svg" %}");
+            }
+            .save-button:hover,
+            .season_save_button:hover {
+              background-image: url("{% static "svg/floppy-disk-solid-hover.svg" %}");
+            }   
+            .save-button:active,
+            .season_save_button:active {
+              background-image: url("{% static "svg/floppy-disk-solid-active.svg" %}");
+            }
+    </style>
+{% endblock head %}
+{% block content %}
+    <div class="tv_show_name_container">
+        <div class="outer_tv_show_name_container">
+            <div class="inner_tv_show_name_container">
+                <h1 class="tv_show_name">{{ tv_show.name }}</h1>
+            </div>
+        </div>
+    </div>
+    <div class="info_container">
+        <div class="info">
+            <div class="poster_file_container">
+                <img class="poster_file"
+                     src="{{ tv_show.poster_file.url }}"
+                     alt=""
+                     width="500px" />
+            </div>
+            <div class="right_card_container">
+                <div class="right_card">
+                    <div class="moveable_right_card">
+                        <div class="right_card_info">
+                            <a class="imdb_url"
+                               href="https://www.imdb.com/title/{{ tv_show.imdb_id }}"
+                               target="_blank">IMDB</a>
+                            <a class="tmdb_url"
+                               href="https://www.themoviedb.org/tv/{{ tv_show.tmdb_id }}"
+                               target="_blank">TheMovieDB</a>
+                            <a class="tvdb_url"
+                               href="https://www.thetvdb.com/?id={{ tv_show.tvdb_id }}&tab=series"
+                               target="_blank">TheTVDB</a>
+                            <button class="btn-convert btn btn-red"
+                                    value="{{ tv_show.id }}"
+                                    content-type="tv-show"
+                                    unacquired="{{ tv_show.unacquired }}">Convert</button>
+                            <div class="info_action">
+                                <a class="edit-button" button-type="edit">
+                                    <i class="edit-svg" value="{{ season.season }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                             viewBox="0 0 512 512"
+                                             value="{{ season.season }}">
+                                            <path value="{{ season.season }}" d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z" />
+                                        </svg>
+                                    </i>
+                                </a>
+                                <a class="delete-button btn-delete" value={{ tv_show.id }} redirect="true" content-type="tv-show">
+                                    <i value={{ tv_show.id }} redirect="true" content-type="tv-show" class="trash-can-svg">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" value={{ tv_show.id }} redirect="true" content-type="tv-show">
+                                            <path value={{ tv_show.id }} redirect="true" content-type="tv-show" d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" />
+                                        </svg>
+                                    </i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="right_card_tags">
+                            <span class="tag">{{ tv_show.type }}</span>
+                            <span class="total_seasons_info tag">Total Seasons {{ tv_show.total_seasons }}</span>
+                            <span class="total_size_info tag">Total Size {{ tv_show.size }} GB</span>
+                        </div>
+                        <div class="right_card_more_tags">
+                            <span class="tvdb_id tag">TVDB - {{ tv_show.tvdb_id }}</span>
+                            <span class="last_watched tag">Last Watched - {{ tv_show.last_watched_date }}
+                                {% if tv_show.last_watched_season != None %}
+                                    - Season {{ tv_show.last_watched_season }}, Episode {{ tv_show.last_watched_episode }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="right_card_new_episodes">
+                            {% if new_episodes_count|length > 0 %}
+                                <span class="new_episodes_count tag">
+                                    {% for episodes in new_episodes_count %}
+                                        {% if episodes.tv_show_id == tv_show.id %}{{ episodes.total_episodes }} New Episodes{% endif %}
+                                    {% endfor %}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="new_episodes hidden">
+                            {% if new_episodes_count|length > 0 %}
+                                {% for episode in new_episodes %}
+                                    <span><span class="new_episodes_gray">Season</span> {{ episode.season }}, <span class="new_episodes_gray">Episode</span> {{ episode.episode }} - <span class="new_episodes_gray">Aired</span> {{ episode.aired }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <div>
+                            <button class="add_season_button btn-blue btn">Add Season</button>
+                        </div>
+                        <div class="back_container">
+                            <a href="{{ request.META.HTTP_REFERER }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                    <path d="M32.5 224H24c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L82.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L169 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H32.5z" />
+                                </svg>
+                            </a>
+                        </div>
+                        <div class="tv_show_form_container">
+                            <form class="tv-show-form right-card form" action="" method="post">
+                                <div class="cancel-button-container">
+                                    <a class="cancel-button" button-type="cancel">
+                                        <i class="edit-svg cancel-x-svg" value="{{ season.season }}">×</i>
+                                    </a>
+                                    <input class="save-button" type="submit" value="" />
+                                </div>
+                                <div class="tv_show_form_labels">
+                                    <label for="id_name">Name</label>
+                                    <label for="id_tvdb_id">
+                                        <a href="https://www.thetvdb.com/?id={{ tv_show.tvdb_id }}&tab=series"
+                                           target="_blank">TVDB ID</a>
+                                    </label>
+                                    <label for="id_file_path">Path</label>
+                                    <label for="id_last_watched_date">Last Watched Date</label>
+                                    <label for="id_last_watched_season">Last Watched Season</label>
+                                    <label for="id_last_watched_episode">Last Watched Episode</label>
+                                </div>
+                                <div class="tv_show_form_inputs">
+                                    <span class="background">{{ tv_show_form.name }}</span>
+                                    <span class="background">{{ tv_show_form.tvdb_id }}</span>
+                                    <span class="background file_path">{{ tv_show_form.file_path }}</span>
+                                    <span class="background date">{{ tv_show_form.last_watched_date }}</span>
+                                    <span class="background">{{ tv_show_form.last_watched_season }}</span>
+                                    <span class="background">{{ tv_show_form.last_watched_episode }}</span>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="success-submited">
+                            <h2>Tv Show Updated!</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="detail_container">
+        {% if tv_show.total_seasons > 0 %}
+            <div class="detail">
+                <form class="season_form" method="post">
+                    <table class="season_table">
+                        {% for season in seasons %}
+                            {% for season_form in season_forms %}
+                                {% if season_form.season.value == season.season %}
+                                    <tbody id="season-{{ season.season }}" class="season">
+                                        <tr class="season_head">
+                                            <th class="empty_th"></th>
+                                            <th class="season_number" value="{{ season.season }}" colspan="2">
+                                                <span>Season {{ season.season }}</span>
+                                            </th>
+                                            <th class="season_actions">
+                                                <div class="season_actions_outer">
+                                                    <div class="season_actions_inner">
+                                                        <a class="season_edit_button"
+                                                           type="button"
+                                                           value="{{ season.season }}"
+                                                           button-type="edit">
+                                                            <i class="edit-svg" value="{{ season.season }}">
+                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                     viewBox="0 0 512 512"
+                                                                     value="{{ season.season }}">
+                                                                    <path value="{{ season.season }}" d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z" />
+                                                                </svg>
+                                                            </i>
+                                                        </a>
+                                                        <a class="season_delete_button btn-delete"
+                                                           value="{{ tv_show.id }}"
+                                                           season="{{ season.season }}"
+                                                           content-type="season"
+                                                           type="button">
+                                                            <i class="trash-can-svg">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                                                                    <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" />
+                                                                </svg>
+                                                            </i>
+                                                        </a>
+                                                        <input class="season_save_button hide" type="submit" value="" />
+                                                    </div>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span>Rip Type</span>
+                                            </th>
+                                            <td class="season_data_rip_type editable">
+                                                {% if season.rip_type == "webrip" %}
+                                                    <span>WebRip</span>
+                                                {% elif season.rip_type == "webdl" %}
+                                                    <span>WebDL</span>
+                                                {% elif season.rip_type == "bluray_encode" %}
+                                                    <span>BluRay Encode</span>
+                                                {% elif season.rip_type == "remux" %}
+                                                    <span>Remux</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="season_form_tag hide">
+                                                <span>{{ season_form.rip_type }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span>Size</span>
+                                            </th>
+                                            <td class="season_data_size editable">
+                                                <span>{{ season.size }} GB</span>
+                                            </td>
+                                            <td class="season_form_tag hide">
+                                                <span>{{ season_form.size }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span>Exact Resolution</span>
+                                            </th>
+                                            <td class="season_data_exact_resolution editable">
+                                                <span>{{ season.exact_resolution }}</span>
+                                            </td>
+                                            <td class="season_form_tag hide">
+                                                <span>{{ season_form.exact_resolution }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span>General Resolution</span>
+                                            </th>
+                                            <td class="season_data_general_resolution editable">
+                                                <span>{{ season.general_resolution }}</span>
+                                            </td>
+                                            <td class="season_form_tag hide">
+                                                <span>{{ season_form.general_resolution }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span>HDR / DV</span>
+                                            </th>
+                                            <td class="season_data_hdr_dv editable">
+                                                {% if season.hdr_dv == "hdr_dv" %}
+                                                    <span>HDR-DV</span>
+                                                {% elif season.hdr_dv == "hdr" %}
+                                                    <span>HDR</span>
+                                                {% elif season.hdr_dv == "dv" %}
+                                                    <span>DV</span>
+                                                {% else %}
+                                                    <span>None</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="season_form_tag hide">
+                                                <span>{{ season_form.hdr_dv }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span>DTS:X / Dolby Atmos</span>
+                                            </th>
+                                            <td class="season_data_dtsx_atmos editable">
+                                                {% if season.dtsx_atmos == "dtsx_dolbyatmos" %}
+                                                    <span>DTS:X - DolbyAtmos</span>
+                                                {% elif season.dtsx_atmos == "dtsx" %}
+                                                    <span>DTS:X</span>
+                                                {% elif season.dtsx_atmos == "dolbyatmos" %}
+                                                    <span>DolbyAtmos</span>
+                                                {% else %}
+                                                    <span>None</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="season_form_tag hide">
+                                                <span>{{ season_form.dtsx_atmos }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span>Video Info</span>
+                                            </th>
+                                            <td class="season_data_video editable">
+                                                <span>{{ season.video }}</span>
+                                            </td>
+                                            <td class="season_form_tag hide">
+                                                <span>{{ season_form.video }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <span>Audio Info</span>
+                                            </th>
+                                            <td class="season_data_audio editable">
+                                                <span>{{ season.audio }}</span>
+                                            </td>
+                                            <td class="season_form_tag hide">
+                                                <span>{{ season_form.audio }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr class="season_data_updated_row last_tr">
+                                            <th>
+                                                <span>Last Updated</span>
+                                            </th>
+                                            <td class="season_data_updated">
+                                                <span>{{ season.updated }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr class="tr_spacer"></tr>
+                                    </tbody>
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    </table>
+                </form>
+            </div>
+        {% else %}
+            <div class="detail hide">
+                <form class="season_form" method="post">
+                    <table class="season_table">
+                    </table>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+{% endblock content %}
+{% block script %}
+    {% load static %}
+    <script src="{% static 'js/general/resize_inputs.js' %}"
+            type="text/javascript"></script>
+    <script src="{% static 'js/edit/edit_tv_show.js' %}" type="text/javascript"></script>
+    <script src="{% static 'js/add/add_and_edit_seasons.js' %}"
+            type="text/javascript"></script>
+    <script src="{% static 'js/general/select_audio_track_modal.js' %}"
+            type="text/javascript"></script>
+{% endblock script %}

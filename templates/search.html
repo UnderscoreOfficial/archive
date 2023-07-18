@@ -1,0 +1,225 @@
+{% extends "main.html" %}
+{% load static %}
+{% block head %}
+    <link rel="stylesheet"
+          href="{% static "css/search_form.css" %}"
+          type="text/css"/>
+    <link rel="stylesheet"
+          href="{% static "css/search_table.css" %}"
+          type="text/css"/>
+{% endblock head %}
+{% block content %}
+    <div class="form_container">
+        <form action="">
+            <div class="search">
+                <input type="search" placeholder="Search database..."/>
+                <input class="submit_search btn btn-blue" type="submit" value="Search"/>
+            </div>
+            <div id="select-options">
+                <div class="field_options">
+                    <label class="head-label" for="type_selection">Type</label>
+                    <div id="type_selection" class="options">
+                        <div class="field-elements">
+                            <label class="option_1">
+                                <input name="type_radio" checked="checked" type="radio" value="" />
+                                All
+                            </label>
+                            <label class="option_2">
+                                <input name="type_radio" type="radio" value="Movie" />
+                                Movie
+                            </label>
+                            <label class="option_3">
+                                <input name="type_radio" type="radio" value="Tv-Show" />
+                                TV-Show
+                            </label>
+                            <label class="option_4" id="type_selection_last">
+                                <input name="type_radio" type="radio" value="unacquired"/>
+                                Unacquired
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <hr class="long"/>
+                <div class="disabled_unacquired">
+                    <div class="field_options">
+                        <label class="head-label" for="watched_selection">Watched</label>
+                        <div id="watched_selection" class="options">
+                            <div class="field-elements">
+                                <label class="option_1">
+                                    <input name="watched_radio" checked="checked" type="radio" value="" />
+                                    All
+                                </label>
+                                <label class="option_2">
+                                    <input name="watched_radio" type="radio" value="watched" />
+                                    Watched
+                                </label>
+                                <label class="option_3" id="watched_selection_last">
+                                    <input name="watched_radio" type="radio" value="not_watched" />
+                                    Not Watched
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="short"/>
+                    <div class="field_options">
+                        <label class="head-label" for="new_episodes_selection">New Episodes</label>
+                        <div id="new_episodes_selection" class="options">
+                            <div class="field-elements">
+                                <label class="option_1">
+                                    <input name="new_episodes_radio" checked="checked" type="radio" value="" />
+                                    All
+                                </label>
+                                <label class="option_2">
+                                    <input name="new_episodes_radio" type="radio" value="no_new_episodes" />
+                                    No New Episodes
+                                </label>
+                                <label class="option_3" id="new_episodes_selection_last">
+                                    <input name="new_episodes_radio" type="radio" value="new_episodes" />
+                                    New Episodes
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="short"/>
+                    <div class="field_options">
+                        <label class="head-label" for="rip_type_selection">Rip Type</label>
+                        <div id="rip_type_selection" class="options">
+                            <div class="field-elements">
+                                <label class="option_1">
+                                    <input name="rip_type_checkbox" type="checkbox" value="webrip" />
+                                    WebRip
+                                </label>
+                                <label class="option_2">
+                                    <input name="rip_type_checkbox" type="checkbox" value="webdl" />
+                                    WebDL
+                                </label>
+                                <label class="option_3">
+                                    <input name="rip_type_checkbox" type="checkbox" value="bluray_encode" />
+                                    BluRay Encode
+                                </label>
+                                <label class="option_4" id="rip_type_selection_last">
+                                    <input name="rip_type_checkbox" type="checkbox" value="remux" />
+                                    Remux
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="medium"/>
+                    <div class="field_options">
+                        <label class="head-label" for="video_quality_selection">Video Quality</label>
+                        <div id="video_quality_selection" class="options">
+                            <div class="field-elements">
+                                <label class="option_1">
+                                    <input name="video_quality_checkbox" type="checkbox" value="480p"/>
+                                    480p
+                                </label>
+                                <label class="option_2">
+                                    <input name="video_quality_checkbox" type="checkbox" value="720p"/>
+                                    720p
+                                </label>
+                                <label class="option_3">
+                                    <input name="video_quality_checkbox" type="checkbox" value="1080i"/>
+                                    1080i
+                                </label>
+                                <label class="option_4">
+                                    <input name="video_quality_checkbox" type="checkbox" value="1080p"/>
+                                    1080p
+                                </label>
+                                <label class="option_5" id="video_quality_selection_last">
+                                    <input name="video_quality_checkbox" type="checkbox" value="2160p"/>
+                                    2160p
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="extra_long"/>
+                    <div class="field_options">
+                        <label class="head-label" for="hdr_dv_selection">HDR / DV</label>
+                        <div id="hdr_dv_selection" class="options">
+                            <div class="field-elements">
+                                <label class="option_1">
+                                    <input name="hdr_dv_radio" checked="checked" type="radio" value="" />
+                                    All
+                                </label>
+                                <label class="option_2">
+                                    <input name="hdr_dv_radio" type="radio" value="dv" />
+                                    DV
+                                </label>
+                                <label class="option_3">
+                                    <input name="hdr_dv_radio" type="radio" value="hdr" />
+                                    HDR
+                                </label>
+                                <label class="option_4" id="hdr_dv_selection_last">
+                                    <input name="hdr_dv_radio" type="radio" value="hdr_dv" />
+                                    HDR / DV
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="medium"/>
+                    <div class="field_options">
+                        <label class="head-label" for="dtsx_atmos_selection">DTS:X / Dolby Atmos</label>
+                        <div id="dtsx_atmos_selection" class="options">
+                            <div class="field-elements">
+                                <label class="option_1">
+                                    <input name="dtsx_atmos_radio" checked="checked" type="radio" value="" />
+                                    All
+                                </label>
+                                <label class="option_2">
+                                    <input name="dtsx_atmos_radio" type="radio" value="dtsx" />
+                                    DTS:X
+                                </label>
+                                <label class="option_3">
+                                    <input name="dtsx_atmos_radio" type="radio" value="dolbyatmos" />
+                                    Dolby Atmos
+                                </label>
+                                <label class="option_4" id="dtsx_atmos_selection_last">
+                                    <input name="dtsx_atmos_radio" type="radio" value="dtsx_dolbyatmos" />
+                                    DTS:X / Dolby Atmos
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="long last"/>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="table_container">
+        {% comment %} <table class="search_table">
+            <thead class="table_head">
+                <tr>
+                    <th id="paginator" col-span="1"></th>
+                    <th></th>
+                    <div class="sorting_headers">
+                        <th class="sorting last_watched"value="watched_descending">
+                            <div>
+                                <span>Last Watched</span>
+                            </div>
+                        </th>
+                        <th class="sorting seasons" value="seasons_descending">
+                            <div>
+                                <span>Seasons</span>
+                            </div>
+                        </th>
+                        <th class="sorting size" value="size_descending">
+                            <div>
+                                <span>Size</span>
+                            </div>
+                        </th>
+                        <th class="sorting last_updated" value="updated_descending">
+                            <div>
+                                <span>Last Updated</span>
+                            </div>
+                        </th>
+                    </div>
+                </tr>
+            </thead>
+            <tbody class="table_results">
+            </tbody>
+        </table> {% endcomment %}
+    </div>
+{% endblock content %}
+{% block script %}
+    <script src="{% static 'js/search.js' %}" type="text/javascript"></script>
+{% endblock script %}

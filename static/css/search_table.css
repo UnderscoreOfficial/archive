@@ -1,0 +1,496 @@
+/** @format */
+
+.table_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+table {
+  background-color: rgb(50, 50, 50);
+  border-radius: 8px;
+  min-width: 80%;
+  border-collapse: separate;
+  border-spacing: 0px;
+  padding: 2px 12px 12px 12px;
+  box-shadow: 0px 6px 16px 0px rgb(0 0 0 / 40%);
+  table-layout: fixed;
+}
+
+td.last_watched span,
+td.season_data span,
+td.size_data span,
+td.last_updated span {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+td.last_watched {
+  width: 150px;
+}
+
+td.season_data {
+  display: table-cell;
+  width: 120px;
+}
+
+td.size_data {
+  display: table-cell;
+  width: 100px;
+}
+
+td.last_updated {
+  width: 150px;
+}
+
+.search.season_data.hide {
+  display: none;
+}
+
+.img_td {
+  width: 175px;
+  padding: 10px;
+}
+
+.img_td img {
+  width: 175px;
+  height: 260px;
+  border-radius: 5px;
+  object-fit: fill;
+}
+
+.sortable span {
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+tr:nth-child(odd) {
+  background-color: rgb(40, 40, 40);
+}
+
+tr:nth-child(even) {
+  background-color: rgb(35, 35, 35);
+}
+
+tr th {
+  background-color: rgb(50, 50, 50);
+}
+
+tbody td:first-of-type {
+  border-top-left-radius: 15px;
+  border-bottom-left-radius: 15px;
+}
+
+tbody td:last-of-type {
+  border-bottom-right-radius: 15px;
+  border-top-right-radius: 15px;
+}
+
+.content_name {
+  all: unset;
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.6px;
+  transition: color 115ms ease-in-out;
+  margin-right: 6px;
+  cursor: pointer;
+}
+
+.content_name:hover {
+  color: rgba(99, 160, 219);
+}
+
+.content_name:active {
+  color: rgb(120, 180, 240);
+}
+
+.content_info {
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.content_info .top {
+  margin-top: 25px;
+  margin-bottom: 10px;
+}
+
+.content_info .bottom {
+  display: flex;
+  gap: 5px;
+}
+
+.content_info .tag {
+  padding: 8px;
+  color: rgb(170, 170, 170);
+  border-radius: 2px;
+  background-color: rgb(45, 45, 45);
+  font-weight: 500;
+}
+
+tr:nth-child(odd) .content_info .tag {
+  background-color: rgb(50, 50, 50);
+}
+
+.table_head tr {
+  height: 60px;
+}
+
+#paginator .pages {
+  display: flex;
+  align-items: center;
+  margin-right: 5px;
+  gap: 5px;
+}
+
+.page_number.number {
+  background-color: rgb(70, 70, 70);
+  color: rgb(240, 240, 240);
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-size: 20px;
+  transition: background-color 100ms ease-in-out, color 115ms ease-in-out;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.page_number.number:hover {
+  color: rgb(150, 150, 150);
+  background-color: rgb(60, 60, 60);
+}
+
+.page_number.number:active {
+  color: rgb(240, 240, 240);
+  background-color: rgb(90, 90, 90);
+}
+
+.page_number.number.active {
+  color: rgb(100, 100, 100);
+  background-color: rgb(35, 35, 35);
+  cursor: default;
+  pointer-events: none;
+}
+
+.page_number.quick_select {
+  fill: white;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background-color 100ms ease-in-out, fill 100ms ease-in-out;
+  margin-top: 8px;
+  margin-right: 5px;
+  width: 11px;
+}
+
+.page_number.quick_select.step {
+  width: 13px;
+}
+
+.page_number.quick_select:hover {
+  color: rgb(150, 150, 150);
+  fill: rgb(150, 150, 150);
+}
+
+.page_number.quick_select:active {
+  color: rgb(220, 220, 220);
+  fill: rgb(220, 220, 220);
+}
+
+.sorting {
+  position: relative;
+  cursor: x;
+}
+
+.sorting div {
+  background-color: rgb(40, 40, 40);
+  color: rgb(240, 240, 240);
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 21px;
+  transition: background-color 100ms ease-in-out, color 100ms ease-in-out;
+  display: inline-block;
+  justify-content: center;
+}
+
+.sorting div:hover {
+  background-color: rgba(35, 35, 35);
+  color: rgb(200, 200, 200);
+}
+
+.sorting div:active {
+  background-color: rgb(40, 40, 40);
+  color: rgb(240, 240, 240);
+}
+
+.sortable.last_watched {
+  min-width: 200px;
+}
+
+.sortable.search.season_data {
+  min-width: 140px;
+}
+
+.sortable.size_data {
+  min-width: 10%;
+}
+
+.sortable.last_updated {
+  min-width: 200px;
+}
+
+.sortable.last_watched .custom {
+  display: inline-block;
+  margin-left: 60px;
+}
+
+#arrow {
+  margin-left: 2px;
+  fill: white;
+  width: 5px;
+  vertical-align: middle;
+}
+
+tr {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.content_info {
+  position: absolute;
+  left: 200px;
+}
+
+.space {
+  display: inline-block;
+  width: 450px;
+}
+
+.space.custom {
+  width: 496px;
+}
+
+.sorting.tv_media_query {
+  display: none;
+}
+td.last_watched.tv_media_query {
+  display: none;
+  width: 0px;
+}
+td.season_data.tv_media_query {
+  display: none;
+  width: 0px;
+}
+td.size_data.tv_media_query {
+  display: none;
+  width: 0px;
+}
+td.last_updated.tv_media_query {
+  width: 0px;
+}
+td.last_updated.tv_media_query span {
+  display: none;
+  min-width: 0px;
+  width: 0px;
+}
+.sortable.last_updated.tv_media_query {
+  min-width: 15px;
+}
+table.tv_media_query {
+  min-width: 95%;
+}
+
+.mobile_name .content_name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 1px;
+  font-weight: 500;
+  min-width: 96%;
+}
+
+.mobile_name {
+  width: 95%;
+  margin-top: 10px;
+}
+
+.trash-can-svg {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 750px) {
+  .img_td img {
+    width: 100%;
+    height: 100%;
+  }
+
+  tr {
+    width: 70%;
+    background-color: rgb(50, 50, 50);
+    padding: 10px;
+    padding-right: 30px;
+    padding-bottom: 0px;
+    border-radius: 5px;
+    box-shadow: 0px 6px 16px 0px rgb(0 0 0 / 40%);
+  }
+
+  tr:nth-child(even),
+  tr:nth-child(odd) {
+    background-color: rgb(50, 50, 50);
+  }
+
+  .img_td {
+    width: 100%;
+    /* height: 100%; */
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    background-color: rgb(40, 40, 40);
+    border-radius: 20px;
+    padding: 10px 10px 15px 10px;
+  }
+
+  .content_info {
+    position: absolute;
+    left: 5px;
+    background-color: unset;
+    width: 200px;
+    display: none;
+  }
+
+  .space {
+    display: none;
+  }
+
+  .sortable.last_updated {
+    display: none;
+  }
+
+  .tag {
+    display: none;
+  }
+
+  table {
+    display: block;
+    background-color: unset;
+    width: 100%;
+    box-shadow: unset;
+    padding-top: 0;
+  }
+
+  tbody {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(300px, max-content));
+    justify-items: center;
+    max-width: 95%;
+    grid-gap: 65px;
+    margin: 0 auto;
+    justify-content: center;
+  }
+
+  thead tr {
+    width: 88%;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 5px;
+    overflow: hidden;
+    border-radius: 0px;
+    box-shadow: none;
+    position: absolute;
+    top: 470px;
+  }
+
+  thead {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-bottom: 50px;
+  }
+
+  .mobile_name.hide {
+    display: flex;
+    justify-content: space-between;
+    width: 95%;
+  }
+}
+
+@media (max-width: 1200px) {
+  .sorting {
+    display: none;
+  }
+
+  td.last_watched {
+    display: none;
+    width: 0px;
+  }
+
+  td.season_data {
+    display: none;
+    width: 0px;
+  }
+
+  td.size_data {
+    display: none;
+    width: 0px;
+  }
+
+  td.last_updated {
+    width: 0px;
+  }
+
+  td.last_updated span {
+    display: none;
+    min-width: 0px;
+    width: 0px;
+  }
+
+  .sortable.last_updated {
+    min-width: 15px;
+  }
+
+  table {
+    min-width: 95%;
+  }
+
+  .space.custom {
+    width: 0px;
+  }
+}
+
+@supports (-webkit-touch-callout: none) and (not (-ms-high-contrast: active)) {
+  tr {
+    position: -webkit-sticky;
+  }
+}
+
+.table_no_items {
+  padding-top: 10px;
+
+  min-width: 40%;
+}
+
+.no_items {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 900;
+  font-size: 30px;
+  letter-spacing: 1.2px;
+}
+
+.content_info.safari {
+  position: static;
+}
+
+/* tr.safari {
+  position: -webkit-sticky;
+} */

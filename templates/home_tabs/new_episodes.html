@@ -1,0 +1,70 @@
+{% extends "main.html" %}
+{% load static %}
+{% block head %}
+    <link rel="stylesheet"
+          href="{% static "css/home/home_tabs.css" %}"
+          type="text/css"/>
+    <link rel="stylesheet"
+          href="{% static "css/home/home.css" %}"
+          type="text/css"/>
+{% endblock head %}
+{% block content %}
+    <div class="tabs container">
+        <ul class="home_tabs">
+            <li>
+                <a class="home_tab new_episodes active"
+                   href="{% url 'home' 'new-episodes' %}">New Episodes</a>
+            </li>
+            <li>
+                <a class="home_tab not_seen" href="{% url 'home' 'not-seen' %}">Not Seen</a>
+            </li>
+            <li>
+                <a class="home_tab can_rewatch" href="{% url 'home' 'can-rewatch' %}">Can Rewatch</a>
+            </li>
+        </ul>
+    </div>
+    {% if new_episodes|length == 0 %}
+        <div class="no_items_container">
+            <div class="no_items_inner_container">
+                <div class="no_items">
+                    <h2>No new episodes.</h2>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    <div class="item_container">
+        {% for new_episode in new_episodes %}
+            {% for tv_show in tv_shows %}
+                {% if tv_show.id == new_episode.tv_show_id %}
+                    <div class="item_outer">
+                        <div id="entry-tv-show-{{ tv_show.id }}" class="item_inner">
+                            <a href="{% url 'tv_show_detail' tv_show.id tv_show.unique_id %}">
+                                <img src="{{ tv_show.poster_file.url }}" alt="" />
+                            </a>
+                            <div class="info_container">
+                                <div class="main_info_container">
+                                    <h2>
+                                        <a href="{% url 'tv_show_detail' tv_show.id tv_show.unique_id %}">{{ tv_show.name }}</a>
+                                    </h2>
+                                    <a class="btn-delete" value="{{ tv_show.id }}" content-type="tv-show">
+                                        <i class="trash-can-svg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                                                <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"/>
+                                            </svg>
+                                        </i>
+                                    </a>
+                                </div>
+                                <div class="tag_container">
+                                    <h3>{{ new_episode.total_episodes }} New Episodes</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </div>
+{% endblock content %}
+{% block script %}
+    <script src="{% static 'js/home.js' %}" type="text/javascript"></script>
+{% endblock script %}

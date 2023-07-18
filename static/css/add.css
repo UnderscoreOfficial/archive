@@ -1,0 +1,231 @@
+/** @format */
+
+.form_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.form_inner_container {
+  margin-top: 100px;
+  background-color: rgb(50, 50, 50);
+  padding: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  box-shadow: 0px 6px 16px 0px rgb(0 0 0 / 40%);
+  position: relative;
+}
+
+form {
+  background-color: rgb(40, 40, 40);
+  padding-bottom: 30px;
+  position: relative;
+  max-width: 1000px;
+  border-radius: 15px;
+}
+
+.title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: rgb(90, 90, 90);
+}
+
+input:not(input[type="submit"]) {
+  all: unset;
+}
+
+select {
+  outline: none;
+  border: none;
+  padding: 5px;
+  background-color: rgb(50, 50, 50);
+  color: white;
+  transition: all 115ms ease-in-out;
+}
+
+select option {
+  background-color: rgb(50, 50, 50);
+  color: white;
+}
+
+.labels {
+  display: inline-flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: right;
+  width: 300px;
+  font-size: 25px;
+  font-weight: 900;
+  color: rgb(135, 135, 135);
+  gap: 60px;
+}
+
+.forms {
+  display: inline-flex;
+  justify-content: center;
+  flex-direction: column;
+  width: 600px;
+  font-weight: 900;
+  font-size: 25px;
+  gap: 58px;
+  margin-left: 25px;
+}
+
+.submit_button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.background {
+  background-color: rgb(50, 50, 50);
+  width: 95%;
+  border-radius: 5px;
+}
+
+.background.date {
+  width: 31%;
+  padding-right: 2px;
+}
+
+input:not(input[type="submit"], input[type="date"]) {
+  width: 100%;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+  display: none;
+}
+
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+#id_last_watched_date::-webkit-calendar-picker-indicator {
+  transition: background-image 125ms ease-in-out;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-color: unset;
+}
+
+#id_last_watched_date {
+  color-scheme: dark;
+}
+
+select {
+  color-scheme: dark;
+  border-radius: 5px;
+  outline: none;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+input[type="submit"] {
+  margin-top: 30px;
+  scale: 1.4;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+input:-webkit-autofill:valid,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-transition-delay: 99999s;
+  -webkit-text-fill-color: white;
+}
+
+a:not(nav a) {
+  all: unset;
+  color: rgb(195, 195, 195);
+  transition: color 115ms ease-in-out;
+}
+
+a:hover:not(nav a) {
+  color: rgba(99, 160, 219);
+}
+
+a:active:not(nav a) {
+  color: rgb(120, 180, 240);
+}
+
+#seasons_and_episodes {
+  margin-top: 60px;
+}
+
+.loading-svg svg {
+  padding: 13px;
+  width: 35px;
+  fill: white;
+  display: inline-block;
+  transition: fill 115ms ease-in-out;
+}
+
+.loading-svg {
+  position: absolute;
+  top: 0;
+  animation: spin 1s linear infinite;
+}
+
+.loading-svg .hide {
+  display: none;
+}
+
+.missing_container {
+  position: absolute;
+  right: 40px;
+  top: 40px;
+  color: rgb(255, 255, 255);
+  background-color: rgb(160, 45, 45);
+  border-radius: 10px;
+  padding: 25px;
+  text-align: center;
+  font-size: 18px;
+  z-index: 1;
+}
+
+.missing_container .close_missing {
+  position: absolute;
+  font-size: 30px;
+  font-weight: 600;
+  top: -5px;
+  right: 5px;
+  margin: 0;
+  transition: color 100ms ease-in-out;
+}
+
+.missing_container:hover .close_missing {
+  color: rgb(180, 180, 180);
+}
+
+.missing_container h2 {
+  margin: 0;
+}
+
+.missing_container p {
+  margin: 0;
+  color: rgb(230, 230, 230);
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  margin-top: 15px;
+}
+
+@keyframes spin {
+  50% {
+    transform: rotate(180deg);
+    animation-timing-function: steps(100, end);
+  }
+  100% {
+    transform: rotate(360deg);
+    animation-timing-function: steps(100, end);
+  }
+}

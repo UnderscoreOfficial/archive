@@ -1,0 +1,290 @@
+{% extends "main.html" %}
+{% load static %}
+{% block head %}
+    <link rel="stylesheet" href="{% static "css/detail/unacquired_detail.css" %}" type="text/css" />
+    <style>
+            .save-button,
+            .season_save_button {
+                background-image: url("{% static "svg/floppy-disk-solid.svg" %}");
+            }
+            .save-button:hover,
+            .season_save_button:hover {
+                background-image: url("{% static "svg/floppy-disk-solid-hover.svg" %}");
+            }   
+            .save-button:active,
+            .season_save_button:active {
+                background-image: url("{% static "svg/floppy-disk-solid-active.svg" %}");
+            }
+    </style>
+{% endblock head %}
+{% block content %}
+    <div class="tv_show_name_container">
+        <div class="outer_tv_show_name_container">
+            <div class="inner_tv_show_name_container">
+                <h1 class="unacquired_content_name">{{ unacquired_content.name }}</h1>
+            </div>
+        </div>
+    </div>
+    {% comment %} this is the new thing  {% endcomment %}
+    <div class="info_container">
+        <div class="info">
+            <div class="poster_file_container">
+                <img class="poster_file"
+                     src="{{ unacquired_content.poster_file.url }}"
+                     alt=""
+                     width="500px" />
+            </div>
+            <div class="right_card_container">
+                <div class="right_card">
+                    <div class="moveable_right_card">
+                        <div class="right_card_info">
+                            <a class="imdb_url"
+                               href="https://www.imdb.com/title/{{ unacquired_content.imdb_id }}"
+                               target="_blank">IMDB</a>
+                            {% if unacquired_content.type == 'Tv-Show' %}
+                                <a class="tmdb_url"
+                                   href="https://www.themoviedb.org/tv/{{ unacquired_content.tmdb_id }}"
+                                   target="_blank">TheMovieDB</a>
+                                <a class="tvdb_url"
+                                   href="https://www.thetvdb.com/?id={{ unacquired_content.tvdb_id }}&tab=series"
+                                   target="_blank">TheTVDB</a>
+                            {% else %}
+                                <a class="tmdb_url"
+                                   href="https://www.themoviedb.org/movie/{{ unacquired_content.tmdb_id }}"
+                                   target="_blank">TheMovieDB</a>
+                            {% endif %}
+                            {% if unacquired_content.type == "Tv-Show" %}
+                                <button class="btn-convert new_btn_convert btn btn-red"
+                                        value="{{ unacquired_content.id }}"
+                                        content-type="tv-show"
+                                        unacquired="{{ unacquired_content.unacquired }}">Convert</button>
+                            {% else %}
+                                <button class="convert_form_button new_btn_convert btn btn-red">Convert</button>
+                            {% endif %}
+                            <div class="info_action">
+                                <a class="edit-button edit_button" button-type="edit">
+                                    <i class="edit-svg">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                             viewBox="0 0 512 512"
+                                             value="{{ season.season }}">
+                                            <path value="{{ season.season }}" d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z" />
+                                        </svg>
+                                    </i>
+                                </a>
+                                {% if unacquired_content.type == "Tv-Show" %}
+                                    <a class="delete-button delete_button btn-delete" value={{ unacquired_content.id }} redirect="true" content-type="unacquired-tv-show">
+                                        <i value={{ tv_show.id }} redirect="true" content-type="tv-show" class="trash-can-svg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" value={{ tv_show.id }} redirect="true" content-type="tv-show">
+                                                <path value={{ tv_show.id }} redirect="true" content-type="tv-show" d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" />
+                                            </svg>
+                                        </i>
+                                    </a>
+                                {% else %}
+                                    <a class="delete-button delete_button btn-delete" value={{ unacquired_content.id }} redirect="true" content-type="unacquired-movie">
+                                        <i value={{ tv_show.id }} redirect="true" content-type="tv-show" class="trash-can-svg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" value={{ tv_show.id }} redirect="true" content-type="tv-show">
+                                                <path value={{ tv_show.id }} redirect="true" content-type="tv-show" d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" />
+                                            </svg>
+                                        </i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="right_card_tags">
+                            <span class="tag">Unacquired {{ unacquired_content.type }}</span>
+                            {% if unacquired_content.type == "Tv-Show" %}
+                                <span class="tvdb_id tag">TVDB - {{ unacquired_content.tvdb_id }}</span>
+                            {% else %}
+                                <span class="tvdb_id tag">TMDB - {{ unacquired_content.tmdb_id }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="back_container">
+                            <a href="{{ request.META.HTTP_REFERER }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                    <path d="M32.5 224H24c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L82.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L169 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H32.5z" />
+                                </svg>
+                            </a>
+                        </div>
+                        <div class="unacquired_form_container">
+                            <form class="tv-show-form right-card form" action="" method="post">
+                                <div class="cancel-button-container">
+                                    <a class="cancel-button" button-type="cancel">
+                                        <i class="edit-svg cancel-x-svg" value="{{ season.season }}">×</i>
+                                    </a>
+                                    <input class="save-button save_button" type="submit" value="" />
+                                </div>
+                                {% if unacquired_content.type == "Tv-Show" %}
+                                    <div class="unacquired_form_labels">
+                                        <label for="id_name">Name</label>
+                                        <label for="id_tvdb_id">
+                                            <a href="https://www.thetvdb.com/?id={{ unacquired_content.tvdb_id }}&tab=series"
+                                               target="_blank">TVDB ID</a>
+                                        </label>
+                                        <label for="id_last_watched_date">Last Watched Date</label>
+                                        <label for="id_last_watched_season">Last Watched Season</label>
+                                        <label for="id_last_watched_episode">Last Watched Episode</label>
+                                    </div>
+                                    <div class="unacquired_form_inputs">
+                                        <span class="background">{{ form.name }}</span>
+                                        <span class="background">{{ form.tvdb_id }}</span>
+                                        <span class="background date">{{ form.last_watched_date }}</span>
+                                        <span class="background">{{ form.last_watched_season }}</span>
+                                        <span class="background">{{ form.last_watched_episode }}</span>
+                                    </div>
+                                {% elif unacquired_content.type == "Movie" %}
+                                    <div class="unacquired_movie_form">
+                                        <div class="unacquired_form_labels">
+                                            <label for="id_name">Name</label>
+                                            <label for="id_tmdb_id">
+                                                <a href="https://www.themoviedb.org/movie/{{ unacquired_content.tmdb_id }}"
+                                                   target="_blank">TMDB ID</a>
+                                            </label>
+                                            <label for="id_last_watched_date">Last Watched Date</label>
+                                        </div>
+                                        <div class="unacquired_form_inputs">
+                                            <span class="background">{{ form.name }}</span>
+                                            <span class="background">{{ form.tmdb_id }}</span>
+                                            <span class="background date">{{ form.last_watched_date }}</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </form>
+                        </div>
+                        <div class="success-submited">
+                            <h2>Tv Show Updated!</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% comment %} OLD OLD OLD OLD  {% endcomment %}
+    <div class="detail_container">
+        <div class="detail hide">
+            <form class="unacquired_movie_convert_form movie_form hide"
+                  action=""
+                  method="post"
+                  value="{{ unacquired_content.id }}"
+                  content-type="movie"
+                  unacquired="{{ unacquired_content.unacquired }}">
+                <div class="form_actions">
+                    <a class="cancel_button cancel-x" type="button">×</a>
+                    <button class="movie_convert_save" type="submit">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             viewBox="0 0 448 512"
+                             fill="rgb(75, 75, 75)">
+                            <path d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V173.3c0-17-6.7-33.3-18.7-45.3L352 50.7C340 38.7 323.7 32 306.7 32H64zm0 96c0-17.7 14.3-32 32-32H288c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V128zM224 288a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
+                        </svg>
+                    </button>
+                </div>
+                <table class="movie_table">
+                    <tr>
+                        <th>
+                            <span>Name</span>
+                        </th>
+                        <td>
+                            <span>{{ form.name }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>Rip Type</span>
+                        </th>
+                        <td class="movie_form">
+                            <span>{{ form.rip_type }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>Movie Size</span>
+                        </th>
+                        <td class="movie_form">
+                            <span>{{ form.size }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>Exact Resolution</span>
+                        </th>
+                        <td class="movie_form">
+                            <span>{{ form.exact_resolution }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>General Resolution</span>
+                        </th>
+                        <td class="movie_form">
+                            <span>{{ form.general_resolution }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>HDR / DV</span>
+                        </th>
+                        <td class="movie_form">
+                            <span>{{ form.hdr_dv }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>DTS:X / Dolby Atmos</span>
+                        </th>
+                        <td class="movie_form">
+                            <span>{{ form.dtsx_atmos }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>Video Info</span>
+                        </th>
+                        <td class="movie_form">
+                            <span>{{ form.video }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>Audio Info</span>
+                        </th>
+                        <td class="movie_form">
+                            <span>{{ form.audio }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>Path</span>
+                        </th>
+                        <td class="movie_form">
+                            <span>{{ form.file_path }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>Last Watched</span>
+                        </th>
+                        <td class="movie_form">
+                            <span>{{ form.last_watched_date }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>TheMovieDB ID</span>
+                        </th>
+                        <td class="movie_form">
+                            <span>{{ form.tmdb_id }}</span>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+{% endblock content %}
+{% block script %}
+    {% load static %}
+    <script src="{% static 'js/general/resize_inputs.js' %}"
+            type="text/javascript"></script>
+    <script src="{% static 'js/edit/edit_unacquired.js' %}"
+            type="text/javascript"></script>
+    <script src="{% static 'js/detail/unacquired_detail.js' %}"
+            type="text/javascript"></script>
+{% endblock script %}

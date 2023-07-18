@@ -1,0 +1,12 @@
+django
+whitenoise
+Pillow
+django-querysetsequence
+djangorestframework
+django_filter
+beautifulsoup4
+tvdb_v4_official
+requests
+httpx
+watchdog
+colorama

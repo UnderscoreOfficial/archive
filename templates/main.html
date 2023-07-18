@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        {% include "include/css.html" %}
+        {% block head %}
+        {% endblock head %}
+        {% load static %}
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="keywords" content="" />
+        <meta name="description" content="" />
+        <link rel="shortcut icon"
+              type="image/png"
+              href="{% static "images\favicon.png" %}" />
+        <title>Archive Beta 2.0</title>
+    </head>
+    <body>
+        {% include "include/confirm_modal.html" %}
+        {% include "include/select_audio_track_modal.html" %}
+        {% include "include/navbar.html" %}
+        <main>
+            {% block content %}
+            {% endblock content %}
+        </main>
+    </body>
+    <footer class="footer">
+        <div>
+            <small>Designed and built by Underscore</small>
+        </div>
+    </footer>
+    {% block script %}
+    {% endblock script %}
+    {% include "include/javascript.html" %}
+</html>

@@ -1,0 +1,295 @@
+{% extends "main.html" %}
+{% load static %}
+{% block head %}
+    <link rel="stylesheet"
+          href="{% static "css/detail/movie_detail.css" %}"
+          type="text/css"/>
+    <style>
+        .save_button {
+            background-image: url("{% static "svg/floppy-disk-solid.svg" %}");
+          }   
+        .save_button:hover {
+          background-image: url("{% static "svg/floppy-disk-solid-hover.svg" %}");
+        }   
+        .save_button:active {
+          background-image: url("{% static "svg/floppy-disk-solid-active.svg" %}");
+        }
+
+        #id_last_watched_date::-webkit-calendar-picker-indicator {
+            background-image: url("{% static "svg/calendar-solid.svg" %}");
+        }
+        #id_last_watched_date::-webkit-calendar-picker-indicator:hover {
+            background-image: url("{% static "svg/calendar-solid-hover.svg" %}");
+        }
+        #id_last_watched_date::-webkit-calendar-picker-indicator:active {
+            background-image: url("{% static "svg/calendar-solid-active.svg" %}");
+        }
+    </style>
+{% endblock head %}
+{% block content %}
+    <div class="movie_name_container">
+        <div class="outer_movie_name_container">
+            <div class="inner_movie_name_container">
+                <h1 class="movie_name">{{ movie.name }}</h1>
+            </div>
+        </div>
+    </div>
+    <div class="info_container">
+        <div class="info">
+            <div class="poster_file_container">
+                <img class="poster_file"
+                     src="{{ movie.poster_file.url }}"
+                     alt=""
+                     width="500px"/>
+            </div>
+            <div class="right_card_container">
+                <div class="right_card">
+                    <div class="right_card_info">
+                        <a class="imdb_url"
+                           href="https://www.imdb.com/title/{{ movie.imdb_id }}"
+                           target="_blank">IMDB</a>
+                        <a class="tmdb_url"
+                           href="https://www.themoviedb.org/movie/{{ movie.tmdb_id }}"
+                           target="_blank">TheMovieDB</a>
+                        <button class="btn-convert btn btn-red"
+                                value="{{ movie.id }}"
+                                content-type="movie"
+                                unacquired="{{ movie.unacquired }}">
+                            Convert
+                        </button>
+                    </div>
+                    <div class="right_card_tags">
+                        <span class="tag">{{ movie.type }}</span>
+                    </div>
+                    <div class="back_container">
+                        <a href="{{ request.META.HTTP_REFERER }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                <path d="M32.5 224H24c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L82.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L169 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H32.5z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="detail_container">
+        <div class="detail">
+            <form class="movie_form" method="post">
+                {% csrf_token %}
+                <div class="form_actions">
+                    <a class="edit_button edit">
+                        <i class="edit-svg">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                <path d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"/>
+                            </svg>
+                        </i>
+                    </a>
+                    <a class="delete_button btn-delete"
+                       value="{{ movie.id }}"
+                       content-type="movie"
+                       redirect="true">
+                        <i class="trash-can-svg">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                                <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"/>
+                            </svg>
+                        </i>
+                    </a>
+                    <input class="save_button hide" type="submit" value="" />
+                </div>
+                <table class="movie_table">
+                    <tr class="editable">
+                        <th>
+                            <span>Type</span>
+                        </th>
+                        <td>
+                            <span>{{ movie.type }}</span>
+                        </td>
+                    </tr>
+                    <tr class="form hide">
+                        <th>
+                            <span>Name</span>
+                        </th>
+                        <td>
+                            <span class="input_resize">{{ form.name }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>Rip Type</span>
+                        </th>
+                        {% if movie.rip_type == "webrip" %}
+                            <td id="rip_type_data" class="editable">
+                                <span>WebRip</span>
+                            </td>
+                        {% elif movie.rip_type == "webdl" %}
+                            <td id="rip_type_data" class="editable">
+                                <span>WebDL</span>
+                            </td>
+                        {% elif movie.rip_type == "bluray_encode" %}
+                            <td id="rip_type_data" class="editable">
+                                <span>BluRay Encode</span>
+                            </td>
+                        {% elif movie.rip_type == "remux" %}
+                            <td id="rip_type_data" class="editable">
+                                <span>Remux</span>
+                            </td>
+                        {% endif %}
+                        <td class="form hide">
+                            <span>{{ form.rip_type }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>Movie Size</span>
+                        </th>
+                        <td id="size_data" class="editable">
+                            <span>{{ movie.size }} GB</span>
+                        </td>
+                        <td class="form hide form_size">
+                            <div class="form_size_inner">
+                                <span class="input_resize">{{ form.size }}</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>Exact Resolution</span>
+                        </th>
+                        <td id="exact_resolution_data" class="editable">
+                            <span>{{ movie.exact_resolution }}</span>
+                        </td>
+                        <td class="form hide">
+                            <span class="input_resize">{{ form.exact_resolution }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>General Resolution</span>
+                        </th>
+                        <td id="general_resolution_data" class="editable">
+                            <span>{{ movie.general_resolution }}</span>
+                        </td>
+                        <td class="form hide">
+                            <span>{{ form.general_resolution }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>HDR / DV</span>
+                        </th>
+                        <td id="hdr_dv_data" class="editable">
+                            {% if movie.hdr_dv == "hdr_dv" %}
+                                <span>HDR-DV</span>
+                            {% elif movie.hdr_dv == "hdr" %}
+                                <span>HDR</span>
+                            {% elif movie.hdr_dv == "dv" %}
+                                <span>DV</span>
+                            {% else %}
+                                <span>None</span>
+                            {% endif %}
+                        </td>
+                        <td class="form hide">
+                            <span>{{ form.hdr_dv }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>DTS:X / Dolby Atmos</span>
+                        </th>
+                        <td id="dtsx_atmos_data" class="editable">
+                            {% if movie.dtsx_atmos == "dtsx_dolbyatmos" %}
+                                <span>DTS:X - DolbyAtmos</span>
+                            {% elif movie.dtsx_atmos == "dtsx" %}
+                                <span>DTS:X</span>
+                            {% elif movie.dtsx_atmos == "dolbyatmos" %}
+                                <span>DolbyAtmos</span>
+                            {% else %}
+                                <span>None</span>
+                            {% endif %}
+                        </td>
+                        <td class="form hide">
+                            <span>{{ form.dtsx_atmos }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>Video Info</span>
+                        </th>
+                        <td id="video_data" class="editable">
+                            <span>{{ movie.video }}</span>
+                        </td>
+                        <td class="form hide">
+                            <span>{{ form.video }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>Audio Info</span>
+                        </th>
+                        <td id="audio_data" class="editable">
+                            <span>{{ movie.audio }}</span>
+                        </td>
+                        <td class="form hide">
+                            <span class="input_resize">{{ form.audio }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>Path</span>
+                        </th>
+                        <td id="file_path_data" class="editable">
+                            {% if movie.file_path != None %}
+                                <span>{{ movie.file_path }}</span>
+                            {% else %}
+                                <span>None</span>
+                            {% endif %}
+                        </td>
+                        <td class="form hide">
+                            <span class="input_resize">{{ form.file_path }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>Last Watched</span>
+                        </th>
+                        <td id="last_watched_date_data" class="editable">
+                            {% if movie_last_watched_date != None %}
+                                <span>{{ movie_last_watched_date }}</span>
+                            {% else %}
+                                <span>None</span>
+                            {% endif %}
+                        </td>
+                        <td class="form hide">
+                            <span>{{ form.last_watched_date }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>TheMovieDB ID</span>
+                        </th>
+                        <td id="tmdb_id_data" class="editable">
+                            <span>{{ movie.tmdb_id }}</span>
+                        </td>
+                        <td class="form hide">
+                            <span>{{ form.tmdb_id }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <span>Last Updated</span>
+                        </th>
+                        <td id="updated_data">
+                            <span>{{ movie.updated }}</span>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+{% endblock content %}
+{% block script %}
+    {% load static %}
+    <script src="{% static 'js/general/resize_inputs.js' %}"
+            type="text/javascript"></script>
+    <script src="{% static 'js/edit/edit_movie.js' %}" type="text/javascript"></script>
+{% endblock script %}
