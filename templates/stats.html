@@ -8,42 +8,58 @@
         <div class="stats_outer_container">
             <div class="title_container">
                 <div class="title">
+                    <div class="clickable-arrow-region left">
+                        <svg class="arrow arrow-left left"
+                             xmlns="http://www.w3.org/2000/svg"
+                             height="1em"
+                             viewBox="0 0 448 512">
+                            <path class="left" d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" />
+                        </svg>
+                    </div>
                     <h1>Stats</h1>
+                    <div class="clickable-arrow-region right active">
+                        <svg class="arrow arrow-right right"
+                             xmlns="http://www.w3.org/2000/svg"
+                             height="1em"
+                             viewBox="0 0 448 512">
+                            <path class="right" d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z" />
+                        </svg>
+                    </div>
                 </div>
             </div>
-            <div class="stats_inner_container">
-                <div class="stats_info_container">
-                    <div class="stats_info_inner">
-                        <div class="stats_info top">
-                            <span class="content_count count_toggle">
-                                <span>Tv-Shows <span class="data">{{ total_tv_shows }}</span></span>
-                                <span class="average_size average">{{ average_tv_show_size }} GBA</span>
-                                <span class="average_size median hide">{{ median_tv_shows }} GBM</span>
-                            </span>
-                            <span class="content_count count_toggle">
-                                <span>Movies <span class="data">{{ total_movies }}</span></span>
-                                <span class="average_size average">{{ average_movie_size }} GBA</span>
-                                <span class="average_size median hide">{{ median_movies }} GBM</span>
-                            </span>
-                            <span class="content_count">
-                                <span>Tv-Shows & Movies <span class="data">{{ total_tv_shows_and_movies }}</span></span>
-                                <span class="average_size">{{ total_average_size }} GBA</span>
-                            </span>
-                            <span>Unacquired <span class="data">{{ total_unacquired }}</span></span>
+            <div class="stats_inner">
+                <div class="stats_inner_container">
+                    <div class="stats_info_container">
+                        <div class="stats_info_inner">
+                            <div class="stats_info top">
+                                <span class="content_count count_toggle">
+                                    <span>Tv-Shows <span class="data">{{ total_tv_shows }}</span></span>
+                                    <span class="average_size average">{{ average_tv_show_size }} GBA</span>
+                                    <span class="average_size median hide">{{ median_tv_shows }} GBM</span>
+                                </span>
+                                <span class="content_count count_toggle">
+                                    <span>Movies <span class="data">{{ total_movies }}</span></span>
+                                    <span class="average_size average">{{ average_movie_size }} GBA</span>
+                                    <span class="average_size median hide">{{ median_movies }} GBM</span>
+                                </span>
+                                <span class="content_count">
+                                    <span>Tv-Shows & Movies <span class="data">{{ total_tv_shows_and_movies }}</span></span>
+                                    <span class="average_size">{{ total_average_size }} GBA</span>
+                                </span>
+                                <span>Unacquired <span class="data">{{ total_unacquired }}</span></span>
+                            </div>
+                        </div>
+                        <div class="stats_info_inner">
+                            <div class="stats_info bottom">
+                                <span>Seasons <span class="data">{{ total_seasons }}</span></span>
+                                <span>Watched <span class="data">{{ total_watched }}</span></span>
+                                <span>Not Watched <span class="data">{{ total_not_watched }}</span></span>
+                                <span>Size <span class="data">{{ drive_info_total|floatformat:2 }} GB</span></span>
+                            </div>
                         </div>
                     </div>
-                    <div class="stats_info_inner">
-                        <div class="stats_info bottom">
-                            <span>Seasons <span class="data">{{ total_seasons }}</span></span>
-                            <span>Watched <span class="data">{{ total_watched }}</span></span>
-                            <span>Not Watched <span class="data">{{ total_not_watched }}</span></span>
-                            <span>Size <span class="data">{{ drive_info_total|floatformat:2 }} GB</span></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="form_container">
-                    <div class="form">
-                        <form method="post" action="">
+                    <div class="form_container">
+                        <div class="form">
                             <a class="add_button">
                                 <i class="plus_svg">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
@@ -51,47 +67,53 @@
                                     </svg>
                                 </i>
                             </a>
-                            <div class="form_list_title">
-                                <h2>Drives</h2>
-                            </div>
-                            <div class="drives">
-                                {% for drive in drives %}
-                                    <div id="drive-{{ drive.id }}" class="drive">
-                                        <span class="drive_info"><span class="drive_name_info">{{ drive.drive_name }} ({{ drive.drive_type }})</span>
-                                        {% for drive_calc in drive_info %}
-                                            {% if drive_calc.drive == drive.drive_path %}{{ drive_calc.size }} GB{% endif %}
-                                        {% endfor %}
-                                    </span>
-                                    <span class="drive_path">{{ drive.drive_path }}</span>
-                                    <a class="btn-delete" value={{ drive.id }} content-type="drive">
-                                        <i class="trash-can-svg">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
-                                                <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" />
-                                            </svg>
-                                        </i>
-                                    </a>
+                            <form method="post" action="">
+                                <div class="form_list_title">
+                                    <h2>Drives</h2>
                                 </div>
-                            {% endfor %}
-                        </div>
-                        <div class="form_inner hide">
-                            {% csrf_token %}
-                            <div class="labels">
-                                <label for="id_drive_name">Name</label>
-                                <label for="id_drive_path">Path</label>
-                                <label for="id_drive_space">Size</label>
-                                <label for="id_drive_type">Type</label>
+                                <div class="drives">
+                                    {% for drive in drives %}
+                                        <div id="drive-{{ drive.id }}" class="drive">
+                                            <span class="drive_info"><span class="drive_name_info">{{ drive.drive_name }} ({{ drive.drive_type }})</span>
+                                            {% for drive_calc in drive_info %}
+                                                {% if drive_calc.drive == drive.drive_path %}{{ drive_calc.size }} GB{% endif %}
+                                            {% endfor %}
+                                        </span>
+                                        <span class="drive_path">{{ drive.drive_path }}</span>
+                                        <a class="btn-delete" value={{ drive.id }} content-type="drive">
+                                            <i class="trash-can-svg">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                                                    <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" />
+                                                </svg>
+                                            </i>
+                                        </a>
+                                    </div>
+                                {% endfor %}
                             </div>
-                            <div class="forms">
-                                <span class="background">{{ form.drive_name }}</span>
-                                <span class="background">{{ form.drive_path }}</span>
-                                <span class="background">{{ form.drive_space }}</span>
-                                <span>{{ form.drive_type }}</span>
+                            <div class="form_inner">
+                                {% csrf_token %}
+                                <h2>Add Drive</h2>
+                                <div class="labels">
+                                    <label for="id_drive_name">Name</label>
+                                    <label for="id_drive_path">Path</label>
+                                    <label for="id_drive_space">Size</label>
+                                    <label for="id_drive_type">Type</label>
+                                </div>
+                                <div class="forms">
+                                    <span class="background">{{ form.drive_name }}</span>
+                                    <span class="background">{{ form.drive_path }}</span>
+                                    <span class="background">{{ form.drive_space }}</span>
+                                    <span>{{ form.drive_type }}</span>
+                                </div>
+                                <div class="save_button_container">
+                                    <input class="save_button btn btn-blue" type="submit" value="Submit" />
+                                </div>
                             </div>
-                            <div class="save_button_container">
-                                <input class="save_button btn btn-blue" type="submit" value="Submit" />
-                            </div>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
+                </div>
+                <div class="show-length-container">
+                    <div class="show-length"></div>
                 </div>
             </div>
         </div>

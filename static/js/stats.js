@@ -1,60 +1,65 @@
-document.querySelectorAll(".content_count.count_toggle").forEach(e => {
-    e.addEventListener("click", () => {
-        e.querySelector(".average_size.average").classList.toggle("hide");
-        e.querySelector(".average_size.median").classList.toggle("hide");
-    });
-})
+/** @format */
 
+document.querySelectorAll(".content_count.count_toggle").forEach((e) => {
+  e.addEventListener("click", () => {
+    e.querySelector(".average_size.average").classList.toggle("hide");
+    e.querySelector(".average_size.median").classList.toggle("hide");
+  });
+});
 
 let add_button = document.querySelector(".add_button");
 document.querySelector("form").addEventListener("submit", addDrive);
 
-add_button.addEventListener("click", e => {
-    let form_inner = document.querySelector(".form_inner");
-    let plus_svg = document.querySelector(".plus_svg");
-    form_inner.classList.toggle("hide");
-    plus_svg.classList.toggle('svg-animation');
-    document.querySelector(".drives").classList.toggle("hide");
+add_button.addEventListener("click", (e) => {
+  const form = document.querySelector("form");
+  const plus_svg = document.querySelector(".plus_svg");
 
-    let form_list_title = document.querySelector(".form_list_title h2");
-    document.querySelector(".form_list_title").classList.toggle("add");
-    if (form_list_title.innerText === "Drives") {
-        form_list_title.innerText = "Add Drives";
-    } else {
-        form_list_title.innerText = "Drives";
-    };
+  plus_svg.classList.toggle("svg-animation");
+  form.classList.toggle("add-drive-move");
+
+  // let form_inner = document.querySelector(".form_inner");
+  // form_inner.classList.toggle("hide");
+  // document.querySelector(".drives").classList.toggle("hide");
+
+  // let form_list_title = document.querySelector(".form_list_title h2");
+  // document.querySelector(".form_list_title").classList.toggle("add");
+  // if (form_list_title.innerText === "Drives") {
+  //   form_list_title.innerText = "Add Drives";
+  // } else {
+  //   form_list_title.innerText = "Drives";
+  // }
 });
- 
+
 async function addDrive(e) {
-    e.preventDefault();
-    const csrftoken = Cookies.get("csrftoken")
+  e.preventDefault();
+  const csrftoken = Cookies.get("csrftoken");
 
-    let name = document.querySelector("#id_drive_name");
-    let path = document.querySelector("#id_drive_path");
-    let size = document.querySelector("#id_drive_space");
-    let type = document.querySelector("#id_drive_type");
+  let name = document.querySelector("#id_drive_name");
+  let path = document.querySelector("#id_drive_path");
+  let size = document.querySelector("#id_drive_space");
+  let type = document.querySelector("#id_drive_type");
 
-    let data = JSON.stringify({
-        "drive_name": name.value,
-        "drive_path": path.value,
-        "drive_space": size.value,
-        "drive_type": type.value
-    });
+  let data = JSON.stringify({
+    drive_name: name.value,
+    drive_path: path.value,
+    drive_space: size.value,
+    drive_type: type.value,
+  });
 
-    let response = await fetch("/api/add-drive/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrftoken,
-        },
-        accept: "application.json",
-        mode: "same-origin",
-        body: data
-    });
+  let response = await fetch("/api/add-drive/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrftoken,
+    },
+    accept: "application.json",
+    mode: "same-origin",
+    body: data,
+  });
 
-    response = await response.json();
+  response = await response.json();
 
-    let html = `
+  let html = `
         <div id="drive-${response.id}" class="drive">
             <span class="drive_info"><span class="drive_name_info">${response.drive_name} (${response.drive_type})</span> ${response.drive_space} GB</span>
             <span class="drive_path">${response.drive_path}</span>
@@ -68,18 +73,46 @@ async function addDrive(e) {
         </div>
     `;
 
-    let drives = document.querySelector(".drives"); 
-    drives.insertAdjacentHTML("beforeend", html);
+  let drives = document.querySelector(".drives");
+  drives.insertAdjacentHTML("beforeend", html);
 
-    let button_delete = document.querySelector(`#drive-${response.id} .btn-delete`);
-    button_delete.addEventListener("click", e => {
-        confirmTask(button_delete.getAttribute("value"), button_delete.getAttribute("season"), button_delete.getAttribute("redirect"), button_delete.getAttribute("unacquired"), button_delete.getAttribute("content-type"), "Delete", "Are You Sure You Want To Delete?");
-    });
+  let button_delete = document.querySelector(`#drive-${response.id} .btn-delete`);
+  button_delete.addEventListener("click", (e) => {
+    confirmTask(button_delete.getAttribute("value"), button_delete.getAttribute("season"), button_delete.getAttribute("redirect"), button_delete.getAttribute("unacquired"), button_delete.getAttribute("content-type"), "Delete", "Are You Sure You Want To Delete?");
+  });
 
-    document.querySelector("form").reset();
-    document.querySelector(".form_list_title h2").innerText = "Drives";
-    document.querySelector(".form_list_title").classList.toggle("add");
-    document.querySelector(".form_inner").classList.toggle("hide");
-    document.querySelector(".plus_svg").classList.toggle('svg-animation');
-    document.querySelector(".drives").classList.toggle("hide");
-};
+  document.querySelector("form").reset();
+  document.querySelector(".form_list_title h2").innerText = "Drives";
+  document.querySelector(".form_list_title").classList.toggle("add");
+  document.querySelector(".form_inner").classList.toggle("hide");
+  document.querySelector(".plus_svg").classList.toggle("svg-animation");
+  document.querySelector(".drives").classList.toggle("hide");
+}
+
+// stats tab switcher
+
+const active_arrows = document.querySelectorAll(".clickable-arrow-region");
+active_arrows.forEach((e) => {
+  e.addEventListener("click", statsTabSwitcher);
+});
+
+function statsTabSwitcher(e) {
+  const is_left = e.target.classList.contains("left");
+  const movable = document.querySelector(".stats_inner_container");
+  const arrow_left = document.querySelector(".clickable-arrow-region.left");
+  const arrow_right = document.querySelector(".clickable-arrow-region.right");
+
+  if (is_left) {
+    movable.style.transition = null;
+    movable.classList.remove("go-to-show-lengths");
+    arrow_left.classList.remove("active");
+    arrow_right.classList.add("active");
+  } else {
+    movable.classList.add("go-to-show-lengths");
+    arrow_left.classList.add("active");
+    arrow_right.classList.remove("active");
+    setTimeout(() => {
+      movable.style.transition = "none";
+    }, 500);
+  }
+}
