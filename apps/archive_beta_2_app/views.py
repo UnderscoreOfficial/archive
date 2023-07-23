@@ -7,7 +7,8 @@ from .forms import MovieForm, TvShowForm, TvShowSeasonForm, UnacquiredMovieForm,
 from .serializers import MovieSerializer, TvShowSerializer, TvShowSeasonSerializer, StorageSpaceSerializer
 from .serializers import MovieSerializerForm, NewFilesSerializer, TvShowSeasonSerializerForm, StorageSpaceSerializerForm
 from .serializers import ListSerializer, UnacquiredTvShowSerializer, UnacquiredMovieSerializer
-from django.db.models import Q, Count
+from django.db.models import F, Q, Count, Sum, FloatField
+from django.db.models.functions import Coalesce
 from .functions import NewEpisodesCheck, Filtering
 from django.utils import timezone
 from datetime import timedelta, datetime
@@ -54,98 +55,123 @@ def search(request):
 
 
 def stats(request):
-    tv_shows = TvShow.objects.all()
-    tv_show_seasons = TvShowSeason.objects.all()
-    movies = Movie.objects.all()
+    # -objects
+    tv_show_objects = TvShow.objects.all()
+    tv_show_season_objects = TvShowSeason.objects.all()
+    movie_objects = Movie.objects.all()
+    storage_space_objects = StorageSpace.objects.all()
 
-    total_tv_shows = len(tv_shows.filter(unacquired=False))
-    total_seasons = len(tv_show_seasons)
-    total_movies = len(movies.filter(unacquired=False))
-    total_watched = len(Movie.objects.filter(watched=True)) + len(TvShow.objects.filter(watched=True))
-    total_unacquired = len(QuerySetSequence(tv_shows, movies).filter(unacquired=True))
-    total_not_watched = len(Movie.objects.filter(
-        watched=False))+len(TvShow.objects.filter(watched=False))
+    # -counts
+    counts = {
+        "movies": {
+            "count": len(movie_objects.filter(unacquired=False)),
+            "size": movie_objects.filter(unacquired=False).aggregate(Sum("size"))["size__sum"],
+            "median": 0,
+            "average": 0
+        },
+        "tv_shows": {
+            "count": len(tv_show_objects.filter(unacquired=False)),
+            "seasons": len(tv_show_season_objects),
+            "size": tv_show_season_objects.aggregate(Sum("size"))["size__sum"],
+            "median": 0,
+            "average": 0
+        },
+        "movies_tv_shows": {
+            "count": 0,
+            "size": 0,
+            "median": 0,
+            "average": 0
+        },
+        "unacquired": {
+            "count": len(QuerySetSequence(tv_show_objects, movie_objects).filter(unacquired=True))
+        }
+    }
 
-    total_size = 0
-    tv_show_size = 0
-    movie_size = 0
-    for tv_show_season in tv_show_seasons:
-        tv_show_size += tv_show_season.size
-    for movie in movies:
-        movie_size += movie.size
+    # set movies_tv_shows
+    counts["movies_tv_shows"]["count"] = counts["movies"]["count"]+counts["tv_shows"]["count"]
+    counts["movies_tv_shows"]["size"] = counts["movies"]["size"]+counts["tv_shows"]["size"]
 
-    total_size = tv_show_size + movie_size
+    # set averages
+    counts["movies"]["average"] = counts["movies"]["size"]/counts["movies"]["count"]
+    counts["tv_shows"]["average"] = counts["tv_shows"]["size"]/counts["tv_shows"]["count"]
+    counts["movies_tv_shows"]["average"] = counts["movies_tv_shows"]["size"]/counts["movies_tv_shows"]["count"]
 
-    form = StorageSpaceForm()
+    # -drives
 
-    drives = StorageSpace.objects.all()
+    raw_drive_data = subprocess.check_output(["drive-size"], shell=True)
 
-    used_drive_space = []
-
-    for drive in drives:
-        space = 0
-        for item in QuerySetSequence(tv_shows, movies).filter(storage_space=drive.id, unacquired=False):
-            space += item.size
-        used_drive_space.append({"drive_name": f"{drive.drive_name}", "total_used_space": space,
-                                "total_space_left": drive.drive_space-space})
-
-    average_tv_show_size = tv_show_size / total_tv_shows
-    average_movie_size = movie_size / total_movies
-    total_average_size = total_size / (total_tv_shows+total_movies)
-
-    median_tv_shows = tv_shows.filter(unacquired=False).order_by("-size")
-    if total_tv_shows % 2 == 0:
-        first = median_tv_shows[int(total_tv_shows/2)].size
-        second = median_tv_shows[int(total_tv_shows/2)+1].size
-        median_tv_shows = (first + second) / 2
-    else:
-        median_tv_shows = median_tv_shows[int((total_tv_shows-1)/2)+1].size
-
-    median_movies = movies.filter(unacquired=False).order_by("-size")
-    if total_movies % 2 == 0:
-        first = median_movies[int(total_movies/2)].size
-        second = median_movies[int(total_movies/2)+1].size
-        median_movies = (first + second) / 2
-    else:
-        median_movies = median_movies[int((total_movies-1)/2)+1].size
-
-    output = subprocess.check_output(["drive-size"], shell=True)
-     
-    drive_info_total_split = str(output).split("\\n")[-2].split(" ")
-    while "" in drive_info_total_split:
-        drive_info_total_split.remove("")
-    drive_info_total = drive_info_total_split[-4].replace("GB", "")
-
-    drive_info = []
-    drive_info_split = str(output).split("\\n")[1:-2]
+    drives = []
+    drive_info_split = str(raw_drive_data).split("\\n")[1:-2]
     for drive in drive_info_split:
         drive = drive.split(" ")
         while "" in drive:
             drive.remove("")
-        drive_info.append({"drive": drive[-1], "size": drive[-3].replace("GB", "")})
+        for data in storage_space_objects:
+            pass
+            if data.drive_path == drive[-1]:
+                drives.append({"id": data.id,
+                               "name": data.drive_name,
+                               "path": data.drive_path,
+                               "type": data.drive_type,
+                               "capacity": data.drive_space,
+                               "used_space": drive[-3].replace("GB", ""),
+                               "hidden": data.hidden
+                               })
 
-    # print(drive_info)
+    # -medians
 
-    context = {"total_tv_shows": total_tv_shows,
-               "total_seasons": total_seasons,
-               "total_movies": total_movies,
-               "total_tv_shows_and_movies": total_tv_shows+total_movies,
-               "total_unacquired": total_unacquired,
-               "total_watched": total_watched,
-               "total_not_watched": total_not_watched,
-               "total_size": total_size,
-               "form": form,
-               "drives": drives,
-               "used_drive_space": used_drive_space,
-               "average_tv_show_size": f"{average_tv_show_size:.2f}",
-               "average_movie_size": f"{average_movie_size:.2f}",
-               "total_average_size": f"{total_average_size:.2f}",
-               "median_movies": f"{median_movies:.2f}",
-               "median_tv_shows": f"{median_tv_shows:.2f}",
-               "drive_info_total": drive_info_total,
-               "drive_info": drive_info}
+    temp = movie_objects.filter(unacquired=False).order_by("-size")
+    if counts["movies"]["count"] % 2 == 0:
+        temp_1 = temp[int(counts["movies"]["count"]/2)].size
+        temp_2 = temp[int(counts["movies"]["count"]/2)+1].size
+        counts["movies"]["median"] = (temp_1+temp_2) / 2
+    else:
+        counts["movies"]["median"] = temp[int((counts["movies"]["count"]-1)/2)+1].size
+
+    temp = tv_show_objects.filter(unacquired=False).order_by("-size")
+    if counts["tv_shows"]["count"] % 2 == 0:
+        temp_1 = temp[int(counts["tv_shows"]["count"]/2)].size
+        temp_2 = temp[int(counts["tv_shows"]["count"]/2)+1].size
+        counts["tv_shows"]["median"] = (temp_1+temp_2) / 2
+    else:
+        counts["tv_shows"]["median"] = temp[int((counts["tv_shows"]["count"]-1)/2)+1].size
+
+    temp = QuerySetSequence(tv_show_objects, movie_objects).filter(unacquired=False).order_by("-size")
+    if counts["movies_tv_shows"]["count"] % 2 == 0:
+        temp_1 = temp[int(counts["movies_tv_shows"]["count"]/2)].size
+        temp_2 = temp[int(counts["movies_tv_shows"]["count"]/2)+1].size
+        counts["movies_tv_shows"]["median"] = (temp_1+temp_2) / 2
+    else:
+        counts["movies_tv_shows"]["median"] = temp[int((counts["movies_tv_shows"]["count"]-1)/2)+1].size
+
+    # -totals
+
+    # used space
+    drive_temp = str(raw_drive_data).split("\\n")[-2].split(" ")
+    while "" in drive_temp:
+        drive_temp.remove("")
+    used_space = drive_temp[-4].replace("GB", "")
+
+    # available space
+    temp = 0
+    for drive in drives:
+        temp += drive["capacity"]
+    available_space = float(temp)-float(used_space)
+
+    totals = {
+        "watched": len(movie_objects.filter(watched=True))+len(tv_show_objects.filter(watched=True)),
+        "not_watched": len(movie_objects.filter(watched=False))+len(tv_show_objects.filter(watched=False)),
+        "used_space": used_space,
+        "available_space": available_space
+    }
+
+    context = {
+        "form": StorageSpaceForm(),
+        "drives": drives,
+        "counts": counts,
+        "totals": totals,
+    }
     return render(request, "stats.html", context)
-
 
 
 # detail #

@@ -65,9 +65,18 @@
   border-radius: 15px;
   width: 100%;
   height: 100%;
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.data-inner {
+  display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 45px;
 }
 
 .stats_info {
@@ -309,8 +318,31 @@ select:-webkit-autofill:focus {
   opacity: 1;
 }
 
+.stats_info h2 {
+  text-align: center;
+  margin: 0;
+  color: rgb(90, 90, 90);
+  font-size: 30px;
+}
+
+.not-watched,
+.watched,
+.seasons {
+  display: flex;
+  align-items: center;
+  fill: rgb(160, 160, 160);
+  font-weight: 900;
+  font-size: 25px;
+  gap: 10px;
+}
+
+.icon-container {
+  display: flex;
+  gap: 35px;
+}
+
 /* add drive transition effect */
-.form_container {
+.form {
   overflow: hidden;
 }
 
@@ -369,7 +401,7 @@ form {
 
 .clickable-arrow-region {
   width: 100%;
-  padding: 15px;
+  padding: 18px;
   opacity: 0;
   pointer-events: none;
   cursor: pointer;
