@@ -1,15 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.http import HttpResponseRedirect, JsonResponse
-from .models import Movie, TvShow, TvShowSeason, NewEpisodes, NextDateToCheckEpisodes, StorageSpace, NewFiles
+from django.http import HttpResponseRedirect
+from .models import Movie, TvShow, TvShowSeason, NewEpisodes, NextDateToCheckEpisodes, StorageSpace, NewFiles, Lengths
 from .forms import MovieForm, TvShowForm, TvShowSeasonForm, UnacquiredMovieForm, StorageSpaceForm
 from .serializers import MovieSerializer, TvShowSerializer, TvShowSeasonSerializer, StorageSpaceSerializer
 from .serializers import MovieSerializerForm, NewFilesSerializer, TvShowSeasonSerializerForm, StorageSpaceSerializerForm
-from .serializers import ListSerializer, UnacquiredTvShowSerializer, UnacquiredMovieSerializer
-from django.db.models import F, Q, Count, Sum, FloatField
-from django.db.models.functions import Coalesce
-from .functions import NewEpisodesCheck, Filtering
+from .serializers import ListSerializer, UnacquiredTvShowSerializer, UnacquiredMovieSerializer, LengthsSerializer
+from django.db.models import Q, Count, Sum
+from .functions import NewEpisodesCheck, Filtering, ContentLength
 from django.utils import timezone
 from datetime import timedelta, datetime
 from django.http import Http404
@@ -55,11 +54,18 @@ def search(request):
 
 
 def stats(request):
+    t1 = time.time()
+    asyncio.run(ContentLength.checkLengths())
+    t2 = time.time()
+
+    print(f"Checking lengths Took: {t2-t1}s")
+
     # -objects
     tv_show_objects = TvShow.objects.all()
     tv_show_season_objects = TvShowSeason.objects.all()
     movie_objects = Movie.objects.all()
     storage_space_objects = StorageSpace.objects.all()
+    lengths = Lengths.objects.all().order_by("-length")
 
     # -counts
     counts = {
@@ -170,6 +176,7 @@ def stats(request):
         "drives": drives,
         "counts": counts,
         "totals": totals,
+        "lengths": lengths
     }
     return render(request, "stats.html", context)
 
@@ -309,6 +316,31 @@ def addUnacquiredContent(request):
 
 
 # api #
+@ api_view(["GET"])
+def apiListContentLengths(request, type: str = "not-watched", order: str = "default"):
+
+    length = Lengths.objects.all()
+
+    if type == "not-watched":
+        length = length.filter(watched=False)
+    elif type == "watched":
+        length = length.filter(watched=True)
+    elif type == "all":
+        pass
+    else:
+        return Response("""Must provide valid type ["not-watched", "watched", "all"]""")
+
+    if order == "default":
+        length = length.order_by("-length")
+    elif order == "reversed":
+        length = length.order_by("length")
+    else:
+        return Response("""Must provide valid order ["default", "reversed"]""")
+
+    serializer = LengthsSerializer(length, many=True)
+    return Response(serializer.data)
+
+
 @ api_view(["POST"])
 def apiRename(request):
     data = request.data
@@ -789,6 +821,12 @@ def apiUpdateTvShow(request, pk: int):
         new_episodes.delete()
 
         tv_show = get_object_or_404(TvShow, id=form.id)
+        try:
+            length = Lengths.objects.get(content_id=tv_show.id, type=tv_show.type)
+            length.delete()
+        except Lengths.DoesNotExist:
+            pass
+
         serializer = TvShowSerializer(tv_show, many=False)
         return Response(serializer.data)
     else:
@@ -839,6 +877,12 @@ def apiUpdateMovie(request, pk: int):
 
         movie.preSave()
         movie.save()
+
+        try:
+            length = Lengths.objects.get(content_id=movie.id, type=movie.type)
+            length.delete()
+        except Lengths.DoesNotExist:
+            pass
 
         serializer = MovieSerializer(movie, many=False)
         return Response(serializer.data)

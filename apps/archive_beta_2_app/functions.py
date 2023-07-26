@@ -1,4 +1,4 @@
-from .models import NewEpisodes, NextDateToCheckEpisodes, TvShow, TvShowSeason, tvdb_api_key, tvdb_pin
+from .models import NewEpisodes, NextDateToCheckEpisodes, TvShow, Movie, TvShowSeason, Lengths, tvdb_api_key, tvdb_pin
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -10,6 +10,7 @@ from asgiref.sync import sync_to_async
 from queryset_sequence import QuerySetSequence
 import time
 import asyncio
+from .models import tmdb_api_key
 
 
 class Filtering:
@@ -258,3 +259,117 @@ class NewEpisodesCheck:
                 await NewEpisodesCheck.createOrUpdateNextCheckDate("create")
             else:
                 await NewEpisodesCheck.createOrUpdateNextCheckDate("update")
+
+
+class ContentLength:
+    tvdb = tvdb_v4_official.TVDB(tvdb_api_key, tvdb_pin)
+
+    @ sync_to_async
+    def getUrls(self, watched=False, id=None, type=None):
+        single = False
+        if type == "Tv-Show":
+            try:
+                obj = TvShow.objects.filter(tvdb_id=id)
+                single = True
+            except TvShow.DoesNotExist:
+                return None
+        elif type == "Movie":
+            try:
+                obj = Movie.objects.filter(tmdb_id=id)
+                single = True
+            except Movie.DoesNotExist:
+                return None
+        elif watched == None:
+            obj = QuerySetSequence(Movie.objects.all(), TvShow.objects.all()).filter(unacquired=False)
+        else:
+            obj = QuerySetSequence(Movie.objects.all(), TvShow.objects.all()
+                                   ).filter(unacquired=False, watched=watched)
+
+        u = []
+        for content in obj:
+            cache = True
+            try:
+                Lengths.objects.get(content_id=content.id, type=content.type)
+            except Lengths.DoesNotExist:
+                cache = False
+            if content.type == "Tv-Show":
+                if cache is False or single is True:
+                    u.append({"id": content.id,
+                              "type": content.type,
+                              "watched": content.watched,
+                              "name": content.name,
+                              "url": f"https://api4.thetvdb.com/v4/series/{content.tvdb_id}/episodes/default?page=0"
+                              })
+            else:
+                if cache is False:
+                    u.append({"id": content.id,
+                              "type": content.type,
+                              "watched": content.watched,
+                              "name": content.name,
+                              "url": f"https://api.themoviedb.org/3/movie/{content.tmdb_id}?api_key={tmdb_api_key}"
+                              })
+        return u
+
+    async def unpack(content):
+        r = await content["response"]
+        content["response"] = r.json()
+
+    async def getResponses(urls=None):
+        if urls is None:
+            urls = await ContentLength.getUrls()
+
+        r = []
+        async with httpx.AsyncClient() as client:
+            for content in urls:
+                if content["type"] == "Tv-Show":
+                    r.append({"id": content["id"],
+                              "type": content["type"],
+                              "watched": content["watched"],
+                              "name": content["name"],
+                              "response": client.get(content["url"], headers={"Authorization": f"Bearer {ContentLength.tvdb.auth_token}"})})
+                else:
+                    r.append({"id": content["id"],
+                              "type": content["type"],
+                              "watched": content["watched"],
+                              "name": content["name"],
+                              "response": client.get(content["url"])})
+            await asyncio.gather(*[ContentLength.unpack(content) for content in r])
+            return r
+
+    @sync_to_async
+    def cacheContentLength(self, id, type, watched, name, length):
+        exists = True
+        try:
+            obj = Lengths.objects.get(content_id=id, type=type)
+        except Lengths.DoesNotExist:
+            exists = False
+
+        if exists == False:
+            Lengths.objects.create(
+                content_id=id,
+                type=type,
+                name=name,
+                watched=watched,
+                length=length
+            )
+        else:
+            obj.length = length
+            obj.save()
+
+    async def checkLengths(id=None, type=None):
+        if id is None:
+            responses = await ContentLength.getResponses()
+        else:
+            urls = await ContentLength.getUrls(False, id, type)
+            responses = await ContentLength.getResponses(urls)
+
+        for content in responses:
+            if content["type"] == "Tv-Show":
+                length = 0
+                for episode in content["response"]["data"]["episodes"]:
+                    if episode["seasonNumber"] > 0:
+                        if episode["runtime"] != None:
+                            length += episode["runtime"]
+                await ContentLength.cacheContentLength(content["id"], content["type"], content["watched"], content["name"], length/60)
+            else:
+                await ContentLength.cacheContentLength(content["id"], content["type"], content["watched"], content["name"], content["response"]["runtime"]/60)

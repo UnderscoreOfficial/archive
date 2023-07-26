@@ -68,7 +68,10 @@ api = [
     path("api/rename", views.apiRename, name="api_rename"),
     path("api/list-new-files/<slug:type>", views.apiListNewFiles, name="api_list_new_files"),
 
-    path("api/verify-id/<slug:type>/<int:id>", views.apiVerifyId, name="api_verify_id")
+    path("api/verify-id/<slug:type>/<int:id>", views.apiVerifyId, name="api_verify_id"),
+
+    path("api/list-content-lengths/<slug:type>/<slug:order>",
+         views.apiListContentLengths, name="api_list_content_lengths")
 ]
 
 urlpatterns = defaultPatterns + api

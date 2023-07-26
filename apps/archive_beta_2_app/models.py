@@ -328,3 +328,11 @@ class NewFiles(models.Model):
     type = models.CharField(max_length=20, choices=show_or_movie)
     name = models.CharField(max_length=500, validators=[MinLengthValidator(1, "Must contain at least 1 characters!")])
     renamed = models.BooleanField(default=False)
+
+
+class Lengths(models.Model):
+    content_id = models.PositiveIntegerField()
+    type = models.CharField(max_length=20, choices=show_or_movie)
+    watched = models.BooleanField()
+    name = models.CharField(max_length=500, validators=[MinLengthValidator(1, "Must contain at least 1 characters!")])
+    length = models.DecimalField(max_digits=20, decimal_places=2, default=0)  # in hours

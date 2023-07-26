@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import TvShow, TvShowSeason, Movie, StorageSpace, NewFiles, rip_type, general_resolution, hdr_dv, dtsx_atmos
+from .models import TvShow, TvShowSeason, Movie, StorageSpace, NewFiles, Lengths, rip_type, general_resolution, hdr_dv, dtsx_atmos
 
 
 # tv show #
@@ -206,4 +206,10 @@ class StorageSpaceSerializer(serializers.ModelSerializer):
 class NewFilesSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewFiles
+        fields = "__all__"
+
+
+class LengthsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lengths
         fields = "__all__"

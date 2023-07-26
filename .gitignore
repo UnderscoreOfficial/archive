@@ -1,5 +1,6 @@
 media
 db.sqlite3
+db copy.sqlite3
 windows_env
 linux_env
 static/admin
