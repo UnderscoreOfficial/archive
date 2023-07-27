@@ -265,7 +265,7 @@ class ContentLength:
     tvdb = tvdb_v4_official.TVDB(tvdb_api_key, tvdb_pin)
 
     @ sync_to_async
-    def getUrls(self, watched=False, id=None, type=None):
+    def getUrls(self, id=None, type=None):
         single = False
         if type == "Tv-Show":
             try:
@@ -279,11 +279,8 @@ class ContentLength:
                 single = True
             except Movie.DoesNotExist:
                 return None
-        elif watched == None:
-            obj = QuerySetSequence(Movie.objects.all(), TvShow.objects.all()).filter(unacquired=False)
         else:
-            obj = QuerySetSequence(Movie.objects.all(), TvShow.objects.all()
-                                   ).filter(unacquired=False, watched=watched)
+            obj = QuerySetSequence(Movie.objects.all(), TvShow.objects.all())
 
         u = []
         for content in obj:
@@ -295,6 +292,7 @@ class ContentLength:
             if content.type == "Tv-Show":
                 if cache is False or single is True:
                     u.append({"id": content.id,
+                              "unacquired": content.unacquired,
                               "type": content.type,
                               "watched": content.watched,
                               "name": content.name,
@@ -303,6 +301,7 @@ class ContentLength:
             else:
                 if cache is False:
                     u.append({"id": content.id,
+                              "unacquired": content.unacquired,
                               "type": content.type,
                               "watched": content.watched,
                               "name": content.name,
@@ -323,12 +322,14 @@ class ContentLength:
             for content in urls:
                 if content["type"] == "Tv-Show":
                     r.append({"id": content["id"],
+                              "unacquired": content["unacquired"],
                               "type": content["type"],
                               "watched": content["watched"],
                               "name": content["name"],
                               "response": client.get(content["url"], headers={"Authorization": f"Bearer {ContentLength.tvdb.auth_token}"})})
                 else:
                     r.append({"id": content["id"],
+                              "unacquired": content["unacquired"],
                               "type": content["type"],
                               "watched": content["watched"],
                               "name": content["name"],
@@ -337,7 +338,7 @@ class ContentLength:
             return r
 
     @sync_to_async
-    def cacheContentLength(self, id, type, watched, name, length):
+    def cacheContentLength(self, id, unacquired, type, watched, name, length):
         exists = True
         try:
             obj = Lengths.objects.get(content_id=id, type=type)
@@ -347,6 +348,7 @@ class ContentLength:
         if exists == False:
             Lengths.objects.create(
                 content_id=id,
+                unacquired=unacquired,
                 type=type,
                 name=name,
                 watched=watched,
@@ -360,7 +362,7 @@ class ContentLength:
         if id is None:
             responses = await ContentLength.getResponses()
         else:
-            urls = await ContentLength.getUrls(False, id, type)
+            urls = await ContentLength.getUrls(id, type)
             responses = await ContentLength.getResponses(urls)
 
         for content in responses:
@@ -370,6 +372,6 @@ class ContentLength:
                     if episode["seasonNumber"] > 0:
                         if episode["runtime"] != None:
                             length += episode["runtime"]
-                await ContentLength.cacheContentLength(content["id"], content["type"], content["watched"], content["name"], length/60)
+                await ContentLength.cacheContentLength(content["id"], content["unacquired"], content["type"], content["watched"], content["name"], length/60)
             else:
-                await ContentLength.cacheContentLength(content["id"], content["type"], content["watched"], content["name"], content["response"]["runtime"]/60)
+                await ContentLength.cacheContentLength(content["id"], content["unacquired"], content["type"], content["watched"], content["name"], content["response"]["runtime"]/60)

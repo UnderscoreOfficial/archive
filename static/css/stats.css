@@ -582,6 +582,19 @@ main {
   max-height: fit-content;
 }
 
+.show-length a {
+  all: unset;
+  transition: color 115ms ease-in-out;
+}
+
+.show-length a:hover {
+  color: rgba(99, 160, 219);
+}
+
+.show-length a:active {
+  color: rgb(120, 180, 240);
+}
+
 .show-length tr:nth-of-type(odd) {
   background-color: rgb(50, 50, 50);
   color: rgb(225, 225, 225);
@@ -604,6 +617,12 @@ main {
   font-size: 18px;
   letter-spacing: 0.8px;
   text-align: left;
+}
+
+.show-length tr td:first-of-type {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .tr-remove {
@@ -665,6 +684,43 @@ main {
 
 .tags-opacity {
   opacity: 1;
+}
+
+.sorting svg {
+  font-size: 25px !important;
+}
+
+.order {
+  user-select: none;
+}
+
+.type.sorting.hide-unacquired .unacquired-svg,
+.type.sorting.sort-tv-shows .movie-svg,
+.type.sorting.sort-movies .tv-show-svg,
+.seen-watched.sorting.sort-not-watched .watched,
+.seen-watched.sorting.sort-watched .not-watched {
+  display: none;
+}
+
+.show-length .sorting {
+  position: relative;
+}
+
+.show-length .stat-tool-tip {
+  top: 50px;
+  z-index: 10;
+  outline: 3px solid rgb(35, 35, 35);
+  user-select: none;
+}
+
+.show-length .sorting:hover .stat-tool-tip {
+  opacity: 1;
+  z-index: 15;
+}
+
+.unacquired-indicator {
+  font-size: 16px;
+  fill: rgb(80, 80, 80);
 }
 
 /* remove x from input[type="search"] */

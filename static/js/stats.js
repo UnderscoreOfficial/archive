@@ -105,8 +105,163 @@ function statsTabSwitcher(e) {
   }
 }
 
-async function getLengths(type = "not-watched", order = "default") {
-  const response = await fetch(`/api/list-content-lengths/${type}/${order}`);
+const type_sorting = document.querySelector(".type.sorting");
+const watched_sorting = document.querySelector(".seen-watched.sorting");
+const search_input = document.querySelector(".search");
+const filter_input = document.querySelector(".filter");
+const order_button = document.querySelector(".order");
+
+let is_shifting = false;
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Shift") {
+    is_shifting = true;
+  } else {
+    is_shifting = false;
+  }
+});
+
+document.addEventListener("keyup", (e) => {
+  is_shifting = false;
+});
+
+let previous_watch_state = undefined;
+let previous_watch_state_text = undefined;
+
+type_sorting.addEventListener("click", async (e) => {
+  const tool_tip = type_sorting.querySelector(".stat-tool-tip");
+  const watched_tool_tip = watched_sorting.querySelector(".stat-tool-tip");
+  if (is_shifting) {
+    if (!type_sorting.classList.contains("unacquired")) {
+      type_sorting.classList.remove("hide-unacquired");
+      type_sorting.classList.remove("sort-tv-shows");
+      type_sorting.classList.remove("sort-movies");
+      type_sorting.classList.add("unacquired");
+      type_sorting.classList.add("all");
+      tool_tip.innerText = "Tv-Shows & Movies & Unacquired";
+      if (previous_watch_state == undefined) {
+        if (watched_sorting.classList.contains("sort-not-watched")) {
+          previous_watch_state = "sort-not-watched";
+          previous_watch_state_text = "Not Watched";
+        } else if (watched_sorting.classList.contains("sort-watched")) {
+          previous_watch_state = "sort-watched";
+          previous_watch_state_text = "Watched";
+        } else {
+          previous_watch_state = "all";
+          previous_watch_state_text = "Not Watched & Watched";
+        }
+        watched_sorting.classList.remove("sort-not-watched");
+        watched_sorting.classList.remove("sort-watched");
+        watched_sorting.classList.add("all");
+        watched_tool_tip.innerText = "Not Watched & Watched";
+      }
+    } else {
+      if (type_sorting.classList.contains("all")) {
+        type_sorting.classList.remove("hide-unacquired");
+        type_sorting.classList.remove("all");
+        type_sorting.classList.add("sort-tv-shows");
+        tool_tip.innerText = "Tv-Shows & Unacquired";
+      } else {
+        type_sorting.classList.remove("unacquired");
+        type_sorting.classList.remove("hide-unacquired");
+        type_sorting.classList.remove("sort-tv-shows");
+        type_sorting.classList.add("sort-movies");
+        tool_tip.innerText = "Movies & Unacquired";
+      }
+    }
+  } else {
+    if (!type_sorting.classList.contains("hide-unacquired")) {
+      type_sorting.classList.remove("unacquired");
+      type_sorting.classList.remove("sort-tv-shows");
+      type_sorting.classList.remove("sort-movies");
+      type_sorting.classList.add("hide-unacquired");
+      type_sorting.classList.add("all");
+      tool_tip.innerText = "Tv-Shows & Movies";
+      if (previous_watch_state !== undefined) {
+        watched_sorting.classList.remove("sort-not-watched");
+        watched_sorting.classList.remove("sort-watched");
+        watched_sorting.classList.remove("all");
+        watched_sorting.classList.add(previous_watch_state);
+        watched_tool_tip.innerText = previous_watch_state_text;
+        previous_watch_state = undefined;
+        previous_watch_state_text = undefined;
+      }
+    } else if (type_sorting.classList.contains("all")) {
+      type_sorting.classList.remove("all");
+      type_sorting.classList.add("hide-unacquired");
+      type_sorting.classList.add("sort-tv-shows");
+      tool_tip.innerText = "Tv-Shows";
+    } else if (type_sorting.classList.contains("sort-tv-shows")) {
+      type_sorting.classList.remove("sort-tv-shows");
+      type_sorting.classList.add("hide-unacquired");
+      type_sorting.classList.add("sort-movies");
+      tool_tip.innerText = "Movies";
+    } else {
+      type_sorting.classList.remove("sort-movies");
+      type_sorting.classList.add("hide-unacquired");
+      type_sorting.classList.add("all");
+      tool_tip.innerText = "Tv-Shows & Movies";
+    }
+  }
+  await buildLengthTable(await getLengths());
+  search();
+});
+
+watched_sorting.addEventListener("click", async (e) => {
+  const tool_tip = watched_sorting.querySelector(".stat-tool-tip");
+  if (watched_sorting.classList.contains("sort-not-watched")) {
+    watched_sorting.classList.remove("sort-not-watched");
+    watched_sorting.classList.add("sort-watched");
+    tool_tip.innerText = "Watched";
+  } else if (watched_sorting.classList.contains("sort-watched")) {
+    watched_sorting.classList.remove("sort-watched");
+    watched_sorting.classList.add("all");
+    tool_tip.innerText = "Not Watched & Watched";
+  } else {
+    watched_sorting.classList.remove("all");
+    if (!type_sorting.classList.contains("hide-unacquired")) {
+      watched_sorting.classList.add("sort-watched");
+      tool_tip.innerText = "Watched";
+    } else {
+      watched_sorting.classList.add("sort-not-watched");
+      tool_tip.innerText = "Not Watched";
+    }
+  }
+  await buildLengthTable(await getLengths());
+  search();
+});
+
+async function getLengths() {
+  const order_sort = document.querySelector(".order");
+  const watched_sort = document.querySelector(".seen-watched.sorting");
+  const type_sort = document.querySelector(".type.sorting");
+
+  // default values
+  let unacquired = "false";
+  let type = "not-watched";
+  let content_type = "all";
+  let order = "default";
+
+  if (!type_sort.classList.contains("hide-unacquired")) {
+    unacquired = "true";
+  }
+
+  if (watched_sort.classList.contains("sort-watched")) {
+    type = "watched";
+  } else if (watched_sort.classList.contains("all")) {
+    type = "all";
+  }
+
+  if (type_sort.classList.contains("sort-tv-shows")) {
+    content_type = "tv-show";
+  } else if (type_sort.classList.contains("sort-movies")) {
+    content_type = "movie";
+  }
+
+  if (order_sort.classList.contains("toggle-order")) {
+    order = "reversed";
+  }
+
+  const response = await fetch(`/api/list-content-lengths/${unacquired}/${type}/${content_type}/${order}`);
   return await response.json();
 }
 
@@ -117,30 +272,48 @@ async function buildLengthTable(items) {
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
-    html += `
-    <tr>
-      <td>${item.name}</td>
-      <td>${item.length} Hours</td>
-    </tr>
-    `;
+
+    if (item.unacquired) {
+      const url = item.type === "Tv-Show" ? `/unacquired-tv-show/${item.content_id}` : `/unacquired-movie/${item.content_id}`;
+      html += `
+        <tr>
+          <td>
+            <a href="${url}" target="_blank">${item.name}</a>
+              <span class="unacquired-indicator colored-svg">
+                  <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
+                      <path d="M32 32H480c17.7 0 32 14.3 32 32V96c0 17.7-14.3 32-32 32H32C14.3 128 0 113.7 0 96V64C0 46.3 14.3 32 32 32zm0 128H480V416c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V160zm128 80c0 8.8 7.2 16 16 16H336c8.8 0 16-7.2 16-16s-7.2-16-16-16H176c-8.8 0-16 7.2-16 16z"/>
+                  </svg>
+              </span>
+          </td>
+          <td>${item.length} Hours</td>
+        </tr>
+      `;
+    } else {
+      const url = item.type === "Tv-Show" ? `/tv-show/${item.content_id}` : `/movie/${item.content_id}`;
+      html += `
+        <tr>
+          <td>
+            <a href="${url}" target="_blank">${item.name}</a>
+          </td>
+          <td>${item.length} Hours</td>
+        </tr>
+      `;
+    }
   }
   table_container.innerHTML = html;
 }
 
-let tags = [];
+let tags = JSON.parse(localStorage.getItem("length_tags") || null);
+if (tags === null) {
+  tags = [];
+} else if (tags.length > 0) {
+  filterBuild(tags);
+}
 
-const search_input = document.querySelector(".search");
-const filter_input = document.querySelector(".filter");
-const order_button = document.querySelector(".order");
 order_button.addEventListener("click", async () => {
   order_button.classList.toggle("toggle-order");
-  if (order_button.classList.contains("toggle-order")) {
-    order_button.querySelector("svg").classList.add("flip-svg");
-    await buildLengthTable(await getLengths("not-watched", "reversed"));
-  } else {
-    order_button.querySelector("svg").classList.remove("flip-svg");
-    await buildLengthTable(await getLengths());
-  }
+  order_button.querySelector("svg").classList.toggle("flip-svg");
+  await buildLengthTable(await getLengths());
   if (search_input.value.length > 0 || tags.length > 0) {
     search();
   }
@@ -197,7 +370,7 @@ async function search() {
     }
   } else {
     if (order_button.classList.contains("toggle-order")) {
-      const length = await getLengths("not-watched", "reversed");
+      const length = await getLengths();
       buildLengthTable(length);
       result_tag.innerText = length.length;
     } else {
@@ -210,6 +383,20 @@ async function search() {
 
 filter_input.addEventListener("keyup", filterTag);
 
+async function filterBuild(tags) {
+  const tags_element = document.querySelector(".exclude-filter-tags");
+  tags.forEach((tag) => {
+    tags_element.insertAdjacentHTML("afterbegin", `<li>${tag}</li>`);
+    const exclude_filters = document.querySelectorAll(".exclude-filter-tags li");
+    exclude_filters.forEach((e) => {
+      if (e.innerText === tag) {
+        e.addEventListener("click", removeTag);
+      }
+    });
+  });
+  search();
+}
+
 async function filterTag(e) {
   const tags_element = document.querySelector(".exclude-filter-tags");
   if (e.key === "Enter") {
@@ -217,7 +404,6 @@ async function filterTag(e) {
     if (tag.length > 0) {
       tags.push(tag);
       filter_input.value = "";
-      console.log(tags);
       tags_element.insertAdjacentHTML("afterbegin", `<li>${tag}</li>`);
       if (!tags_element.classList.contains("tags-opacity")) {
         filter_input.focus();
@@ -229,6 +415,7 @@ async function filterTag(e) {
           e.addEventListener("click", removeTag);
         }
       });
+      localStorage.setItem("length_tags", JSON.stringify(tags));
       search();
     }
   }
@@ -242,6 +429,7 @@ function removeTag(e) {
       const index = tags.indexOf(i.innerText);
       if (index !== -1) {
         tags.splice(index, 1);
+        localStorage.setItem("length_tags", JSON.stringify(tags));
         search();
       }
     }

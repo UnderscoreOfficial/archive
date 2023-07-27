@@ -65,7 +65,7 @@ def stats(request):
     tv_show_season_objects = TvShowSeason.objects.all()
     movie_objects = Movie.objects.all()
     storage_space_objects = StorageSpace.objects.all()
-    lengths = Lengths.objects.all().order_by("-length")
+    lengths = Lengths.objects.filter(unacquired=False, watched=False).order_by("-length")
 
     # -counts
     counts = {
@@ -317,9 +317,16 @@ def addUnacquiredContent(request):
 
 # api #
 @ api_view(["GET"])
-def apiListContentLengths(request, type: str = "not-watched", order: str = "default"):
+def apiListContentLengths(request, unacquired: str = "false", type: str = "not-watched", content_type: str = "all",  order: str = "default"):
 
     length = Lengths.objects.all()
+
+    if unacquired == "false":
+        length = length.filter(unacquired=False)
+    elif unacquired == "true":
+        pass
+    else:
+        return Response("""Must provide valid unacquired ["true", "false"]""")
 
     if type == "not-watched":
         length = length.filter(watched=False)
@@ -329,6 +336,15 @@ def apiListContentLengths(request, type: str = "not-watched", order: str = "defa
         pass
     else:
         return Response("""Must provide valid type ["not-watched", "watched", "all"]""")
+
+    if content_type == "tv-show":
+        length = length.filter(type="Tv-Show")
+    elif content_type == "movie":
+        length = length.filter(type="Movie")
+    elif content_type == "all":
+        pass
+    else:
+        return Response("""Must provide valid content_type ["tv-show", "movie", "all"]""")
 
     if order == "default":
         length = length.order_by("-length")
@@ -992,26 +1008,24 @@ def apiDeleteUnacquired(request, type: str, pk: int) -> Response:
 
 @ api_view(["POST"])
 def apiConvert(request, type: str, pk: int) -> Response:
+    print(request.data, type, pk)
     match type:
         case "tv-show":
             tv_show = get_object_or_404(TvShow, id=pk)
             if tv_show.unacquired == True:
-                form = TvShowForm(instance=tv_show, data=request.data)
-                if form.is_valid():
-                    form = form.save(commit=False)
-                    tv_show.unacquired = False
-                    tv_show.ended = False
-                    form.preSave()
-                    form.save()
-                    serializer = TvShowSerializer(tv_show, many=False)
-                    try:
-                        new_file = NewFiles.objects.get(id=form.tvdb_id)
-                        new_file.delete()
-                        print(f"[NewFile] {form.tvdb_id} successfully deleted!")
-                    except Exception:
-                        print("[NewFile] New File does not exist!")
-                else:
-                    return Response(form.errors)
+                form = TvShowForm(instance=tv_show)
+                form = form.save(commit=False)
+                tv_show.unacquired = False
+                tv_show.ended = False
+                form.preSave()
+                form.save()
+                serializer = TvShowSerializer(tv_show, many=False)
+                try:
+                    new_file = NewFiles.objects.get(id=form.tvdb_id)
+                    new_file.delete()
+                    print(f"[NewFile] {form.tvdb_id} successfully deleted!")
+                except Exception:
+                    print("[NewFile] New File does not exist!")
             else:
                 tv_show.unacquired = True
                 tv_show.ended = True
@@ -1023,26 +1037,28 @@ def apiConvert(request, type: str, pk: int) -> Response:
                 if len(seasons) > 0:
                     for season in seasons:
                         season.delete()
+                try:
+                    length = Lengths.objects.get(content_id=tv_show.id, type=tv_show.type)
+                    length.delete()
+                except Lengths.DoesNotExist:
+                    pass
                 serializer = UnacquiredTvShowSerializer(tv_show, many=False)
             return Response(serializer.data)
         case "movie":
             movie = get_object_or_404(Movie, id=pk)
             if movie.unacquired == True:
                 form = MovieForm(instance=movie, data=request.data)
-                if form.is_valid():
-                    form = form.save(commit=False)
-                    movie.unacquired = False
-                    form.preSave()
-                    form.save()
-                    serializer = MovieSerializer(movie, many=False)
-                    try:
-                        new_file = NewFiles.objects.get(id=form.tmdb_id)
-                        new_file.delete()
-                        print(f"[NewFile] {form.tmdb_id} successfully deleted!")
-                    except Exception:
-                        print("[NewFile] New File does not exist!")
-                else:
-                    return Response(form.errors)
+                form = form.save(commit=False)
+                movie.unacquired = False
+                form.preSave()
+                form.save()
+                serializer = MovieSerializer(movie, many=False)
+                try:
+                    new_file = NewFiles.objects.get(id=form.tmdb_id)
+                    new_file.delete()
+                    print(f"[NewFile] {form.tmdb_id} successfully deleted!")
+                except Exception:
+                    print("[NewFile] New File does not exist!")
             else:
                 movie.unacquired = True
                 movie.size = 0
@@ -1056,6 +1072,11 @@ def apiConvert(request, type: str, pk: int) -> Response:
                 movie.storage_space = None
                 movie.file_path = None
                 movie.save()
+                try:
+                    length = Lengths.objects.get(content_id=movie.id, type=movie.type)
+                    length.delete()
+                except Lengths.DoesNotExist:
+                    pass
                 serializer = UnacquiredMovieSerializer(movie, many=False)
             return Response(serializer.data)
         case _:

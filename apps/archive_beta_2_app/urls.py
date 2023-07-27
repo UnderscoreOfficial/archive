@@ -70,7 +70,7 @@ api = [
 
     path("api/verify-id/<slug:type>/<int:id>", views.apiVerifyId, name="api_verify_id"),
 
-    path("api/list-content-lengths/<slug:type>/<slug:order>",
+    path("api/list-content-lengths/<slug:unacquired>/<slug:type>/<slug:content_type>/<slug:order>",
          views.apiListContentLengths, name="api_list_content_lengths")
 ]
 
