@@ -10,3 +10,4 @@ requests
 httpx
 watchdog
 colorama
+python-dotenv

@@ -10,12 +10,16 @@ from io import BytesIO
 import requests
 import re
 from django.db.models import Sum
+from dotenv import load_dotenv
+import os
+
+load_dotenv("/git/archive-beta/.env")
 
 
 # THIRD PARTY API KEYS
-tmdb_api_key = "921a4fb8b02402b3b2999aee705ce874"
-tvdb_api_key = "ab55a199-25ff-4cd3-a10b-d930cbf5703b"
-tvdb_pin = "S44VJSYY"
+tmdb_api_key = os.environ["TMDB_API_KEY"]
+tvdb_api_key = os.environ["TVDB_API_KEY"]
+tvdb_pin = os.environ["TVDB_PIN"]
 
 
 rip_type = (

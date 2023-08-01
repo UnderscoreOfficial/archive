@@ -5,3 +5,4 @@ windows_env
 linux_env
 static/admin
 __pycache__
+.env
