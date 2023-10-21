@@ -216,7 +216,10 @@ class NewEpisodesCheck:
 
             for tv_show_or_episodes in tv_show_and_episodes:
                 tv_show = tv_show_or_episodes["tv_show"]
-                episodes = tv_show_or_episodes["episodes"]["data"]["episodes"]
+                try:
+                    episodes = tv_show_or_episodes["episodes"]["data"]["episodes"]
+                except KeyError:
+                    pass
                 status = tv_show_or_episodes["episodes"]["data"]["series"]["status"]["name"]
                 last_aired_date = datetime.strptime(
                     tv_show_or_episodes["episodes"]["data"]["series"]["lastAired"], "%Y-%m-%d").date()
