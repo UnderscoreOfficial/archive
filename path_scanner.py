@@ -7,6 +7,7 @@ import colorama
 import sqlite3
 import time
 import re
+import requests
 import os
 
 
@@ -55,18 +56,21 @@ class FileChangeHandler(FileSystemEventHandler):
                     '--format',
                     "{n} ({y}) - [{id}] {vf}{fn.find(/(?i).*\\bHYBRID\\b.*/) ? '.HYBRID' : (fn.find(/(?i).*\\bDV\\b.*/) && fn.find(/(?i)\.hdr.*/)) ? '.HYBRID' : fn.find(/(?i).*\\bDV\\b.*/) ? '.DV' : fn.find(/(?i)\.hdr.*/) ? '.HDR' : ''}{fn.find(/(?i).*\\bREMUX\\b.*/) ? '.REMUX' : source ? '.'+source : ''}"
                 ]
-                result = subprocess.run(command, capture_output=True, text=True)
+                result = subprocess.run(
+                    command, capture_output=True, text=True)
 
                 if result.stderr:
                     if "Failed to identify" in result.stderr:
-                        print(colorama.Fore.RED + f"File Cannot be found at {current_full_path}")
+                        print(colorama.Fore.RED +
+                              f"File Cannot be found at {current_full_path}")
                     else:
                         print(result.stderr)
 
                     message = "none"
                     if has_unicode == True:
                         message = "unicode"
-                        print(colorama.Fore.YELLOW + f"Unicode found in {current_full_path}")
+                        print(colorama.Fore.YELLOW +
+                              f"Unicode found in {current_full_path}")
                     cursor.execute("INSERT INTO archive_beta_2_app_newfiles (type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?)",
                                    ("Movie", str(base_path), str(show), message, "none", False))
                     connect.commit()
@@ -74,22 +78,26 @@ class FileChangeHandler(FileSystemEventHandler):
                     return
 
                 try:
-                    new_path_match = re.search(r"to \[(.*)\.[a-zA-Z0-9]{3}\]", result.stdout).group(1)
+                    new_path_match = re.search(
+                        r"to \[(.*)\.[a-zA-Z0-9]{3}\]", result.stdout).group(1)
                 except Exception:
                     if "] already exists" in result.stdout:
-                        new_path_match = re.search(r"because \[(.*)\.[a-zA-Z0-9]{3}\]", result.stdout).group(1)
+                        new_path_match = re.search(
+                            r"because \[(.*)\.[a-zA-Z0-9]{3}\]", result.stdout).group(1)
                     else:
                         message = "none"
                         if has_unicode == True:
                             message = "unicode"
-                            print(colorama.Fore.YELLOW + f"Unicode found in {current_full_path}")
+                            print(colorama.Fore.YELLOW +
+                                  f"Unicode found in {current_full_path}")
                         cursor.execute("INSERT INTO archive_beta_2_app_newfiles (type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?)",
                                        ("Movie", str(base_path), str(show), message, "none", False))
                         connect.commit()
                         connect.close()
                         return
 
-                new_path = Path(f"{new_path_match}.{extension}").parts[-1].strip()
+                new_path = Path(
+                    f"{new_path_match}.{extension}").parts[-1].strip()
                 id = re.sub(r"\D+", "", re.findall(r"\[\d+\]", new_path)[0])
                 name = new_path.split(f" - [{id}] ")[0]
 
@@ -97,20 +105,24 @@ class FileChangeHandler(FileSystemEventHandler):
                                (id, "Movie", str(base_path), str(show), name, str(new_path), False))
                 connect.commit()
 
-                print(f"{colorama.Fore.LIGHTCYAN_EX + show} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + new_path}")
-                print(colorama.Fore.LIGHTBLACK_EX + "Type: ", colorama.Fore.WHITE + "Movie")
-                print(colorama.Fore.LIGHTBLACK_EX + "ID: ", colorama.Fore.WHITE + id)
-                print(colorama.Fore.LIGHTBLACK_EX + "Name: ", colorama.Fore.WHITE + name)
-                print(colorama.Fore.LIGHTBLACK_EX + "Path: ", colorama.Fore.WHITE + str(base_path))
+                print(
+                    f"{colorama.Fore.LIGHTCYAN_EX + show} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + new_path}")
+                print(colorama.Fore.LIGHTBLACK_EX + "Type: ",
+                      colorama.Fore.WHITE + "Movie")
+                print(colorama.Fore.LIGHTBLACK_EX +
+                      "ID: ", colorama.Fore.WHITE + id)
+                print(colorama.Fore.LIGHTBLACK_EX +
+                      "Name: ", colorama.Fore.WHITE + name)
+                print(colorama.Fore.LIGHTBLACK_EX + "Path: ",
+                      colorama.Fore.WHITE + str(base_path))
         elif path.parts[-2] == "series":
             cursor.execute(
                 "SELECT * FROM archive_beta_2_app_newfiles WHERE base_path = ? AND current_name = ?", (str(base_path), str(show)))
-            new_path = cursor.fetchone()
+            new_show = cursor.fetchone()
 
-            if new_path is None:
+            if new_show is None:
 
                 # check seasons
-                new_seasons = []
                 connect = sqlite3.connect("db.sqlite3")
                 cursor = connect.cursor()
                 cursor.execute(
@@ -123,7 +135,8 @@ class FileChangeHandler(FileSystemEventHandler):
 
                     for season in path.iterdir():
                         try:
-                            season = int(season.parts[-1].replace("Season", "").strip())
+                            season = int(
+                                season.parts[-1].replace("Season", "").strip())
                         except:
                             continue
                         valid = False
@@ -132,16 +145,43 @@ class FileChangeHandler(FileSystemEventHandler):
                             if season == db_season:
                                 valid = True
                         if valid == False:
-                            new_seasons.append(season)
-                            cursor.execute("INSERT INTO archive_beta_2_app_newfiles (type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?)",
-                                           ("Season", str(path), season, "none", "none", False))
-                            connect.commit()
-                            print(
-                                f"{colorama.Fore.LIGHTCYAN_EX + 'New Season'} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + path.parts[-1].strip()}")
-                            print(colorama.Fore.LIGHTBLACK_EX + "Type: ", colorama.Fore.WHITE + "Season")
-                            print(colorama.Fore.LIGHTBLACK_EX + "Season: ", colorama.Fore.WHITE + str(season))
+                            current_file_size = sum(
+                                file.stat().st_size for file in path.rglob('*'))
+                            if sum(file.stat().st_size for file in path.rglob('*')) <= current_file_size:
 
-                if len(new_seasons) == 0:
+                                cursor.execute("INSERT INTO archive_beta_2_app_newfiles (type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?)",
+                                               ("Season", str(path), season, str(show), "none", False))
+                                connect.commit()
+                                print(
+                                    f"{colorama.Fore.LIGHTCYAN_EX + 'New Season'} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + path.parts[-1].strip()}")
+                                print(colorama.Fore.LIGHTBLACK_EX +
+                                      "Path: ", colorama.Fore.WHITE + str(base_path))
+                                print(colorama.Fore.LIGHTBLACK_EX +
+                                      "Type: ", colorama.Fore.WHITE + "Season")
+                                print(colorama.Fore.LIGHTBLACK_EX + "Season: ",
+                                      colorama.Fore.WHITE + str(season))
+
+                                cursor.execute(
+                                    "SELECT id, tvdb_id FROM archive_beta_2_app_tvshow WHERE file_path = ?", (str(path),))
+                                tv_show = cursor.fetchone()
+
+
+                                # response = requests.post(url="http://192.168.1.117:8000/api/rename",
+                                #                          json={
+                                #                              "id": tv_show[1],
+                                #                              "base_path": str(path),
+                                #                              "current_name": season,
+                                #                              "new_name": "none",
+                                #                              "renamed": False,
+                                #                              "type": "Season"
+                                #                          })
+                                # print(response.json())
+
+                cursor.execute(
+                    "SELECT * FROM archive_beta_2_app_newfiles WHERE base_path = ? AND name = ?", (f"{base_path}/{show}", str(show)))
+                new_season = cursor.fetchone()
+
+                if new_season is None:
                     try:
                         query = re.search(r"^(.*?) \(\d{4}\)", show).group(1)
                     except Exception:
@@ -164,15 +204,18 @@ class FileChangeHandler(FileSystemEventHandler):
                         "{n} ({y}) - [{id}]/{episode.special ? 'Specials' : 'Season ' + s}/{n} - {s00e00} - {t}.{vf}{fn.find(/(?i).*\\bHYBRID\\b.*/) ? '.HYBRID' : (fn.find(/(?i).*\\bDV\\b.*/) && fn.find(/(?i)\.hdr.*/)) ? '.HYBRID' : fn.find(/(?i).*\\bDV\\b.*/) ? '.DV' : fn.find(/(?i)\.hdr.*/) ? '.HDR' : ''}{fn.find(/(?i).*\\bREMUX\\b.*/) ? '.REMUX' : source ? '.'+source : ''}"
                     ]
 
-                    result = subprocess.run(command, capture_output=True, text=True)
+                    result = subprocess.run(
+                        command, capture_output=True, text=True)
                     if result.stderr:
                         message = "none"
                         if has_unicode == True:
                             message = "unicode"
                         if "No media files" in result.stderr:
-                            print(colorama.Fore.YELLOW + f"No files in {current_full_path}")
+                            print(colorama.Fore.YELLOW +
+                                  f"No files in {current_full_path}")
                         elif "Failed to fetch" in result.stderr:
-                            print(colorama.Fore.YELLOW + f"Failed to fetch data in {current_full_path}")
+                            print(colorama.Fore.YELLOW +
+                                  f"Failed to fetch data in {current_full_path}")
                         else:
                             print(result.stderr)
                         cursor.execute("INSERT INTO archive_beta_2_app_newfiles (type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?)",
@@ -182,7 +225,8 @@ class FileChangeHandler(FileSystemEventHandler):
                         return
 
                     try:
-                        new_path_match = re.search(r"to \[(.*)\.[a-zA-Z0-9]{3}\]", result.stdout).group(1)
+                        new_path_match = re.search(
+                            r"to \[(.*)\.[a-zA-Z0-9]{3}\]", result.stdout).group(1)
                     except Exception:
                         cursor.execute("INSERT INTO archive_beta_2_app_newfiles (type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?)",
                                        ("Tv-Show", str(base_path), str(show), "none", "none", False))
@@ -194,10 +238,12 @@ class FileChangeHandler(FileSystemEventHandler):
                     id = re.sub(r"\D+", "", new_path.split("-")[-1])
                     name = new_path.replace(f" - [{id}]", "").strip()
 
-                    cursor.execute("SELECT * FROM archive_beta_2_app_newfiles WHERE id = ?", (id,))
+                    cursor.execute(
+                        "SELECT * FROM archive_beta_2_app_newfiles WHERE id = ?", (id,))
                     find_show = cursor.fetchone()
                     if find_show is not None:
-                        print(colorama.Fore.YELLOW + f"Tv-Show with id [{id}] already exists at {current_full_path}")
+                        print(
+                            colorama.Fore.YELLOW + f"Tv-Show with id [{id}] already exists at {current_full_path}")
                         connect.close()
                         return
 
@@ -205,13 +251,20 @@ class FileChangeHandler(FileSystemEventHandler):
                                    (id, "Tv-Show", str(base_path), str(show), name, str(new_path), False))
                     connect.commit()
 
-                    print(f"{colorama.Fore.LIGHTCYAN_EX + show} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + new_path}")
-                    print(colorama.Fore.LIGHTBLACK_EX + "Type: ", colorama.Fore.WHITE + "Tv-Show")
-                    print(colorama.Fore.LIGHTBLACK_EX + "ID: ", colorama.Fore.WHITE + id)
-                    print(colorama.Fore.LIGHTBLACK_EX + "Name: ", colorama.Fore.WHITE + name)
+                    print(
+                        f"{colorama.Fore.LIGHTCYAN_EX + show} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + new_path}")
+                    print(colorama.Fore.LIGHTBLACK_EX + "Type: ",
+                          colorama.Fore.WHITE + "Tv-Show")
+                    print(colorama.Fore.LIGHTBLACK_EX +
+                          "ID: ", colorama.Fore.WHITE + id)
+                    print(colorama.Fore.LIGHTBLACK_EX +
+                          "Name: ", colorama.Fore.WHITE + name)
             else:
-                for season in path:
-                    print(season)
+                try:
+                    for season in path:
+                        print(season)
+                except:
+                    pass
         connect.close()
 
     # snake_case needed for watch dog observer
@@ -307,18 +360,21 @@ def onLoad(directories_to_watch):
                         '--format',
                         "{n} ({y}) - [{id}] {vf}{fn.find(/(?i).*\\bHYBRID\\b.*/) ? '.HYBRID' : (fn.find(/(?i).*\\bDV\\b.*/) && fn.find(/(?i)\.hdr.*/)) ? '.HYBRID' : fn.find(/(?i).*\\bDV\\b.*/) ? '.DV' : fn.find(/(?i)\.hdr.*/) ? '.HDR' : ''}{fn.find(/(?i).*\\bREMUX\\b.*/) ? '.REMUX' : source ? '.'+source : ''}"
                     ]
-                    result = subprocess.run(command, capture_output=True, text=True)
+                    result = subprocess.run(
+                        command, capture_output=True, text=True)
 
                     if result.stderr:
                         if "Failed to identify" in result.stderr:
-                            print(colorama.Fore.RED + f"File Cannot be found at {current_full_path}")
+                            print(colorama.Fore.RED +
+                                  f"File Cannot be found at {current_full_path}")
                         else:
                             print(result.stderr)
 
                         message = "none"
                         if has_unicode == True:
                             message = "unicode"
-                            print(colorama.Fore.YELLOW + f"Unicode found in {current_full_path}")
+                            print(colorama.Fore.YELLOW +
+                                  f"Unicode found in {current_full_path}")
                         cursor.execute("INSERT INTO archive_beta_2_app_newfiles (type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?)",
                                        ("Movie", str(base_path), str(show), message, "none", False))
                         connect.commit()
@@ -326,34 +382,44 @@ def onLoad(directories_to_watch):
                         return
 
                     try:
-                        new_path_match = re.search(r"to \[(.*)\.[a-zA-Z0-9]{3}\]", result.stdout).group(1)
+                        new_path_match = re.search(
+                            r"to \[(.*)\.[a-zA-Z0-9]{3}\]", result.stdout).group(1)
                     except Exception:
                         if "] already exists" in result.stdout:
-                            new_path_match = re.search(r"because \[(.*)\.[a-zA-Z0-9]{3}\]", result.stdout).group(1)
+                            new_path_match = re.search(
+                                r"because \[(.*)\.[a-zA-Z0-9]{3}\]", result.stdout).group(1)
                         else:
                             message = "none"
                             if has_unicode == True:
                                 message = "unicode"
-                                print(colorama.Fore.YELLOW + f"Unicode found in {current_full_path}")
+                                print(colorama.Fore.YELLOW +
+                                      f"Unicode found in {current_full_path}")
                             cursor.execute("INSERT INTO archive_beta_2_app_newfiles (type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?)",
                                            ("Movie", str(base_path), str(show), message, "none", False))
                             connect.commit()
                             connect.close()
                             return
 
-                    new_path = Path(f"{new_path_match}.{extension}").parts[-1].strip()
-                    id = re.sub(r"\D+", "", re.findall(r"\[\d+\]", new_path)[0])
+                    new_path = Path(
+                        f"{new_path_match}.{extension}").parts[-1].strip()
+                    id = re.sub(
+                        r"\D+", "", re.findall(r"\[\d+\]", new_path)[0])
                     name = new_path.split(f" - [{id}] ")[0]
 
                     cursor.execute("INSERT INTO archive_beta_2_app_newfiles (id, type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?, ?)",
                                    (id, "Movie", str(base_path), str(show), name, str(new_path), False))
                     connect.commit()
 
-                    print(f"{colorama.Fore.LIGHTCYAN_EX + show} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + new_path}")
-                    print(colorama.Fore.LIGHTBLACK_EX + "Type: ", colorama.Fore.WHITE + "Movie")
-                    print(colorama.Fore.LIGHTBLACK_EX + "ID: ", colorama.Fore.WHITE + id)
-                    print(colorama.Fore.LIGHTBLACK_EX + "Name: ", colorama.Fore.WHITE + name)
-                    print(colorama.Fore.LIGHTBLACK_EX + "Path: ", colorama.Fore.WHITE + str(base_path))
+                    print(
+                        f"{colorama.Fore.LIGHTCYAN_EX + show} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + new_path}")
+                    print(colorama.Fore.LIGHTBLACK_EX + "Type: ",
+                          colorama.Fore.WHITE + "Movie")
+                    print(colorama.Fore.LIGHTBLACK_EX +
+                          "ID: ", colorama.Fore.WHITE + id)
+                    print(colorama.Fore.LIGHTBLACK_EX +
+                          "Name: ", colorama.Fore.WHITE + name)
+                    print(colorama.Fore.LIGHTBLACK_EX + "Path: ",
+                          colorama.Fore.WHITE + str(base_path))
             elif path.parts[-2] == "series":
 
                 if found == True:
@@ -365,7 +431,8 @@ def onLoad(directories_to_watch):
 
                     for season_path in path.iterdir():
                         if "Season" in str(season_path):
-                            season_number = int(season_path.parts[-1].replace("Season ", ""))
+                            season_number = int(
+                                season_path.parts[-1].replace("Season ", ""))
                             if (db_show is not None):
                                 cursor.execute(
                                     "SELECT season FROM archive_beta_2_app_tvshowseason WHERE tv_show_id = ?", (db_show[0],))
@@ -383,7 +450,8 @@ def onLoad(directories_to_watch):
                                     connect.commit()
                                     print(
                                         f"{colorama.Fore.LIGHTCYAN_EX + 'New Season'} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + path.parts[-1].strip()}")
-                                    print(colorama.Fore.LIGHTBLACK_EX + "Type: ", colorama.Fore.WHITE + "Season")
+                                    print(colorama.Fore.LIGHTBLACK_EX +
+                                          "Type: ", colorama.Fore.WHITE + "Season")
                                     print(colorama.Fore.LIGHTBLACK_EX + "Season: ",
                                           colorama.Fore.WHITE + str(season_number))
 
@@ -397,7 +465,8 @@ def onLoad(directories_to_watch):
                 if new_path is None:
                     if len(new_seasons) == 0:
                         try:
-                            query = re.search(r"^(.*?) \(\d{4}\)", show).group(1)
+                            query = re.search(
+                                r"^(.*?) \(\d{4}\)", show).group(1)
                         except Exception:
                             query = re.sub(r"[^a-zA-Z0-9\s]", "", show)
                         command = [
@@ -418,15 +487,18 @@ def onLoad(directories_to_watch):
                             "{n} ({y}) - [{id}]/{episode.special ? 'Specials' : 'Season ' + s}/{n.replace(' ', '.')}.{s00e00}.{t}.[{id}].{vf}{fn.find(/(?i).*\\bHYBRID\\b.*/) ? '.HYBRID' : (fn.find(/(?i).*\\bDV\\b.*/) && fn.find(/(?i)\.hdr.*/)) ? '.HYBRID' : fn.find(/(?i).*\\bDV\\b.*/) ? '.DV' : fn.find(/(?i)\.hdr.*/) ? '.HDR' : ''}{fn.find(/(?i).*\\bREMUX\\b.*/) ? '.REMUX' : source ? '.'+source : ''}"
                         ]
 
-                        result = subprocess.run(command, capture_output=True, text=True)
+                        result = subprocess.run(
+                            command, capture_output=True, text=True)
                         if result.stderr:
                             message = "none"
                             if has_unicode == True:
                                 message = "unicode"
                             if "No media files" in result.stderr:
-                                print(colorama.Fore.YELLOW + f"No files in {current_full_path}")
+                                print(colorama.Fore.YELLOW +
+                                      f"No files in {current_full_path}")
                             elif "Failed to fetch" in result.stderr:
-                                print(colorama.Fore.YELLOW + f"Failed to fetch data in {current_full_path}")
+                                print(
+                                    colorama.Fore.YELLOW + f"Failed to fetch data in {current_full_path}")
                             else:
                                 print(result.stderr)
                             cursor.execute("INSERT INTO archive_beta_2_app_newfiles (type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?)",
@@ -436,7 +508,8 @@ def onLoad(directories_to_watch):
                             return
 
                         try:
-                            new_path_match = re.search(r"to \[(.*)\.[a-zA-Z0-9]{3}\]", result.stdout).group(1)
+                            new_path_match = re.search(
+                                r"to \[(.*)\.[a-zA-Z0-9]{3}\]", result.stdout).group(1)
                         except Exception:
                             cursor.execute("INSERT INTO archive_beta_2_app_newfiles (type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?)",
                                            ("Tv-Show", str(base_path), str(show), "none", "none", False))
@@ -452,10 +525,14 @@ def onLoad(directories_to_watch):
                                        (id, "Tv-Show", str(base_path), str(show), name, str(new_path), False))
                         connect.commit()
 
-                        print(f"{colorama.Fore.LIGHTCYAN_EX + show} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + new_path}")
-                        print(colorama.Fore.LIGHTBLACK_EX + "Type: ", colorama.Fore.WHITE + "Tv-Show")
-                        print(colorama.Fore.LIGHTBLACK_EX + "ID: ", colorama.Fore.WHITE + id)
-                        print(colorama.Fore.LIGHTBLACK_EX + "Name: ", colorama.Fore.WHITE + name)
+                        print(
+                            f"{colorama.Fore.LIGHTCYAN_EX + show} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + new_path}")
+                        print(colorama.Fore.LIGHTBLACK_EX + "Type: ",
+                              colorama.Fore.WHITE + "Tv-Show")
+                        print(colorama.Fore.LIGHTBLACK_EX +
+                              "ID: ", colorama.Fore.WHITE + id)
+                        print(colorama.Fore.LIGHTBLACK_EX +
+                              "Name: ", colorama.Fore.WHITE + name)
     connect.close()
 
 

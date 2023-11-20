@@ -61,49 +61,34 @@ async function submitForm(e) {
   });
 
   response = await response.json();
-  console.log(response);
+  // console.log(response);
+
+  let valid_file_path = false;
 
   try {
     if (response.file_path == "File path does not exist.") {
       console.log("File path does not exist.");
+      valid_file_path = true;
     }
   } catch (error) {}
 
-  if (document.querySelector(".tv_show_name").innerText !== response.name) {
-    window.location.reload();
-  }
-
-  name.value = response.name;
-  last_watched_date.value = response.last_watched_date;
-  tvdb_id.value = response.tvdb_id;
-  file_path.value = response.file_path;
-  last_watched_season.value = response.last_watched_season;
-  last_watched_episode.value = response.last_watched_episode;
-  document.querySelector(".imdb_url").setAttribute("href", `https://www.imdb.com/title/${response.imdb_id}`);
-  document.querySelector(".tmdb_url").setAttribute("href", `https://www.themoviedb.org/tv/${response.tmdb_id}`);
-  document.querySelector(".tvdb_url").setAttribute("href", `https://www.thetvdb.com/?id=${response.tvdb_id}&tab=series`);
-  document.querySelector(".tvdb_id.tag").innerText = `TVDB - ${response.tvdb_id}`;
-
-  if (response.last_watched_date != null) {
-    try {
-      let date = new Date(response.last_watched_date);
-
-      let options = {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      };
-
-      let parsed_date = date.toLocaleDateString("en-US", options);
-      let split_date = parsed_date.split(" ");
-      let formatted_date = `${split_date[0]}. ${split_date[1]} ${split_date[2]}`;
-
-      document.querySelector(".last_watched.tag").innerText = `Last Watched - ${formatted_date}`;
-    } catch (TypeError) {
-      document.querySelector(".last_watched.tag").innerText = `Last Watched - ${response.last_watched_date}`;
+  if (!valid_file_path) {
+    if (document.querySelector(".tv_show_name").innerText !== response.name) {
+      window.location.reload();
     }
 
-    if (response.last_watched_season != null) {
+    name.value = response.name;
+    last_watched_date.value = response.last_watched_date;
+    tvdb_id.value = response.tvdb_id;
+    file_path.value = response.file_path;
+    last_watched_season.value = response.last_watched_season;
+    last_watched_episode.value = response.last_watched_episode;
+    document.querySelector(".imdb_url").setAttribute("href", `https://www.imdb.com/title/${response.imdb_id}`);
+    document.querySelector(".tmdb_url").setAttribute("href", `https://www.themoviedb.org/tv/${response.tmdb_id}`);
+    document.querySelector(".tvdb_url").setAttribute("href", `https://www.thetvdb.com/?id=${response.tvdb_id}&tab=series`);
+    document.querySelector(".tvdb_id.tag").innerText = `TVDB - ${response.tvdb_id}`;
+
+    if (response.last_watched_date != null) {
       try {
         let date = new Date(response.last_watched_date);
 
@@ -117,23 +102,43 @@ async function submitForm(e) {
         let split_date = parsed_date.split(" ");
         let formatted_date = `${split_date[0]}. ${split_date[1]} ${split_date[2]}`;
 
-        document.querySelector(".last_watched.tag").innerText = `Last Watched - ${formatted_date} - Season ${response.last_watched_season}, Episode ${response.last_watched_episode}`;
+        document.querySelector(".last_watched.tag").innerText = `Last Watched - ${formatted_date}`;
       } catch (TypeError) {
-        document.querySelector(".last_watched.tag").innerText = `Last Watched - ${response.last_watched_date} - Season ${response.last_watched_season}, Episode ${response.last_watched_episode}`;
+        document.querySelector(".last_watched.tag").innerText = `Last Watched - ${response.last_watched_date}`;
+      }
+
+      if (response.last_watched_season != null) {
+        try {
+          let date = new Date(response.last_watched_date);
+
+          let options = {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          };
+
+          let parsed_date = date.toLocaleDateString("en-US", options);
+          let split_date = parsed_date.split(" ");
+          let formatted_date = `${split_date[0]}. ${split_date[1]} ${split_date[2]}`;
+
+          document.querySelector(".last_watched.tag").innerText = `Last Watched - ${formatted_date} - Season ${response.last_watched_season}, Episode ${response.last_watched_episode}`;
+        } catch (TypeError) {
+          document.querySelector(".last_watched.tag").innerText = `Last Watched - ${response.last_watched_date} - Season ${response.last_watched_season}, Episode ${response.last_watched_episode}`;
+        }
       }
     }
-  }
 
-  document.querySelector(".poster_file").src = response.poster_file;
-  moveable_right_card.classList.add("move_more_left");
-  moveable_right_card.classList.remove("move_left");
-  form.removeEventListener("submit", submitForm);
-  localStorage.clear();
-  setTimeout(() => {
-    moveable_right_card.style.transition = "left 0.15s ease-in-out";
-    moveable_right_card.classList.remove("move_more_left");
-    moveable_right_card.style.transition = "left 0.3s ease-in-out";
-  }, 525);
+    document.querySelector(".poster_file").src = response.poster_file;
+    moveable_right_card.classList.add("move_more_left");
+    moveable_right_card.classList.remove("move_left");
+    form.removeEventListener("submit", submitForm);
+    localStorage.clear();
+    setTimeout(() => {
+      moveable_right_card.style.transition = "left 0.15s ease-in-out";
+      moveable_right_card.classList.remove("move_more_left");
+      moveable_right_card.style.transition = "left 0.3s ease-in-out";
+    }, 525);
+  }
 }
 
 // show new episodes

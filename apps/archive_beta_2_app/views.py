@@ -20,6 +20,7 @@ import json
 import time
 from pathlib import Path
 from .rename import Rename
+import re
 
 
 def home(request, tab: str):
@@ -358,25 +359,70 @@ def apiListContentLengths(request, unacquired: str = "false", type: str = "not-w
 
 
 @ api_view(["POST"])
+def apiUpdateFilePath(request, type: str, pk: int) -> bool:
+    if type == "show":
+        content = get_object_or_404(TvShow, id=pk)
+    elif type == "movie":
+        content = get_object_or_404(Movie, id=pk)
+        return Response("Movie support not implemented yet!")
+    else:
+        return Response("""Valid types ["show", "movie"]!""")
+
+    # content.file_path = request.data["file_path"]
+    # content.save()
+    print(request.data)
+    return Response({"file_path": content.file_path})
+
+
+@ api_view(["GET"])
+def apiIsLegacy(request, type: str, pk: int) -> bool:
+    if type == "show":
+        content = get_object_or_404(TvShow, id=pk)
+    elif type == "movie":
+        content = get_object_or_404(Movie, id=pk)
+        return Response("Movie support not implemented yet!")
+    else:
+        return Response("""Valid types ["show", "movie"]!""")
+
+    check = re.search(r"(?<=\[)[0-9\]]+(?=\])", content.file_path.split("/")[-1])
+    if check is None:
+        return Response(True)
+    return Response(False)
+
+
+@ api_view(["POST"])
 def apiRename(request):
     data = request.data
+
+    print(data)
 
     try:
         id = data["id"]
         base_path = data["base_path"]
         current_name = data["current_name"]
         new_name = data["new_name"]
-        rename = data["rename"]
+        renamed = data["renamed"]
+        type = data["type"]
     except:
-        return Response("""{"id": 12345, "base_path": "/fake/example", "current_name": "this is a fake show.mkv", "new_name": "this is a modified fake show [12345].mkv"}""")
+        return Response("""{"id": 12345, "base_path": "/fake/example", "current_name": "this is a fake show.mkv", "new_name": "this is a modified fake show [12345].mkv", "is_season": true}""")
 
-    rename_object = Rename(id, base_path, current_name, new_name, rename)
+    is_season = False
+    if type == "Season":
+        is_season = True
+
+    rename_object = Rename(id, base_path, current_name, new_name, renamed)
     content_type = Path(base_path).parts[-1]
 
-    if content_type == "movies":
+    if is_season == True:
+        print("RENAMING SEASON")
+        results = rename_object.renameSeason()
+    elif content_type == "movies":
+        print("RENAMING MOVIE")
         results = rename_object.renameMovie()
     elif content_type == "series":
+        print("RENAMING SERIES")
         results = rename_object.renameTvShow()
+
 
     if results[1] == "renamed":
         serializer = NewFilesSerializer(results[0], many=False)
@@ -390,6 +436,8 @@ def apiListNewFiles(request, type: str):
         type = "Movie"
     elif type == "tv-shows":
         type = "Tv-Show"
+    elif type == "seasons":
+        type = "Season"
     new_files = NewFiles.objects.filter(type=type)
     serializer = NewFilesSerializer(new_files, many=True)
     return Response(serializer.data)

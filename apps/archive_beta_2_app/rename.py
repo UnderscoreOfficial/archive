@@ -6,6 +6,7 @@ import subprocess
 import re
 import os
 import shutil
+from .models import TvShow
 
 
 class Rename:
@@ -201,3 +202,121 @@ class Rename:
         except NewFiles.DoesNotExist:
             return (None, "error")
         return (new_file, "renamed")
+
+    def renameSeason(self):
+        renamed = re.search(r"(?<=\[)[0-9\]]+(?=\])", self.path.parts[-1])
+        is_full_rename = False
+
+        # would be none if show has never been renamed at all
+        if renamed is None:
+            new_file_type = "series"
+            is_full_rename = True
+            command = [
+                'filebot',
+                '-rename',
+                '-r',
+                str(self.base_path),
+                '--q',
+                f"{self.id}",
+                '--db',
+                'TheTVDB',
+                '-non-strict',
+                '--action',
+                'move',
+                '--output',
+                str(self.base_path.parent),
+                '--format',
+                "{n} ({y}) - [{id}]/{episode.special ? 'Specials' : 'Season ' + s}/{n.replace(' ', '.')}.{s00e00}.{t.replace(' ', '.')}.[{id}].{vf}{fn.find(/(?i).*\\bHYBRID\\b.*/) ? '.HYBRID' : (fn.find(/(?i).*\\bDV\\b.*/) && fn.find(/(?i)\.hdr.*/)) ? '.HYBRID' : fn.find(/(?i).*\\bDV\\b.*/) ? '.DV' : fn.find(/(?i)\.hdr.*/) ? '.HDR' : ''}{fn.find(/(?i).*\\bREMUX\\b.*/) ? '.REMUX' : source ? '.'+source : ''}"
+            ]
+
+            result = subprocess.run(command, capture_output=True, text=True)
+
+            command = [
+                "tree",
+                str(self.base_path)
+            ]
+            tree = subprocess.run(command, capture_output=True, text=True)
+
+            files_left = int(tree.stdout.split(",")[-1].strip().split(" ")[0])
+
+            if files_left == 0:
+                shutil.rmtree(str(self.base_path))
+            else:
+                error_message = f"[FileBot] Could not delete directory {self.current_name} contains ({files_left}) file/s!"
+                print(colorama.Fore.RED + error_message)
+                return (error_message, "error")
+
+            try:
+                files_left = int(tree.stdout.split(",")[-1].strip().split(" ")[0])
+                if files_left == 0:
+                    shutil.rmtree(str(self.base_path))
+                else:
+                    error_message = f"[FileBot] Could not delete directory {self.base_path} contains ({files_left}) file/s!"
+                    print(colorama.Fore.RED + error_message)
+                    return (error_message, "error")
+            except Exception as e:
+                pass
+                if result.stderr:
+                    return (result.stderr, "error")
+                return (result.stdout, "error")
+        else:
+            new_file_type = "Season"
+            command = [
+                'filebot',
+                '-rename',
+                '-r',
+                str(f"{self.path}/Season {self.current_name}"),
+                '--q',
+                f"{self.id}",
+                '--db',
+                'TheTVDB',
+                '-non-strict',
+                '--action',
+                'move',
+                '--output',
+                str(self.base_path),
+                '--format',
+                "{n} ({y}) - [{id}]/{episode.special ? 'Specials' : 'Season ' + s}/{n.replace(' ', '.')}.{s00e00}.{t.replace(' ', '.')}.[{id}].{vf}{fn.find(/(?i).*\\bHYBRID\\b.*/) ? '.HYBRID' : (fn.find(/(?i).*\\bDV\\b.*/) && fn.find(/(?i)\.hdr.*/)) ? '.HYBRID' : fn.find(/(?i).*\\bDV\\b.*/) ? '.DV' : fn.find(/(?i)\.hdr.*/) ? '.HDR' : ''}{fn.find(/(?i).*\\bREMUX\\b.*/) ? '.REMUX' : source ? '.'+source : ''}"
+            ]
+
+            result = subprocess.run(command, capture_output=True, text=True)
+
+        try:
+            new_path_match = re.search(r"to \[(.*)\.[a-zA-Z]{3}\]", result.stdout).group(1)
+        except Exception as e:
+            if result.stderr:
+                return (result.stderr, "error", e)
+            return (result.stdout, "error", e)
+
+        new_name = Path(new_path_match).parts[-3].strip()
+        id = re.sub(r"\D+", "", new_name.split("-")[-1])
+        name = new_name.replace(f" - [{id}]", "").strip()
+
+        new_files = NewFiles.objects.filter(type=new_file_type, base_path=self.base_path)
+        for file in new_files:
+            try:
+                file.delete()
+            except NewFiles.DoesNotExist:
+                return (None, "error")
+
+        if is_full_rename == True:
+            try:
+                tv_show = TvShow.objects.get(tvdb_id=self.id)
+                tv_show.file_path = str(Path(new_path_match).parent.parent)
+                tv_show.save()
+                print(tv_show)
+            except:
+                return (None, "error")
+
+        if new_file_type == "Season":
+            print(f"{colorama.Fore.LIGHTCYAN_EX + 'New Season'} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + new_name}")
+            print(colorama.Fore.LIGHTBLACK_EX + "Type: ", colorama.Fore.WHITE + "Season")
+            print(colorama.Fore.LIGHTBLACK_EX + "Season: ", colorama.Fore.WHITE + str(self.current_name))
+        else:
+            print(f"{colorama.Fore.LIGHTCYAN_EX + self.current_name} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + new_name}")
+            print(colorama.Fore.LIGHTBLACK_EX + "Type: ", colorama.Fore.WHITE + "Tv-Show")
+            print(colorama.Fore.LIGHTBLACK_EX + "ID: ", colorama.Fore.WHITE + id)
+            print(colorama.Fore.LIGHTBLACK_EX + "Name: ", colorama.Fore.WHITE + name)
+            print(colorama.Fore.LIGHTBLACK_EX + "Path: ", colorama.Fore.WHITE + str(self.base_path))
+
+        return ({"id": id, "new_name": new_name, "name": name, "file_path": str(Path(new_path_match).parent.parent)}, "renamed")

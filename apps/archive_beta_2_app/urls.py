@@ -71,7 +71,11 @@ api = [
     path("api/verify-id/<slug:type>/<int:id>", views.apiVerifyId, name="api_verify_id"),
 
     path("api/list-content-lengths/<slug:unacquired>/<slug:type>/<slug:content_type>/<slug:order>",
-         views.apiListContentLengths, name="api_list_content_lengths")
+         views.apiListContentLengths, name="api_list_content_lengths"),
+
+    path("api/is-legacy/<slug:type>/<int:pk>", views.apiIsLegacy, name="api_is_legacy"),
+
+    path("api/update-file-path/<slug:type>/<int:pk>", views.apiUpdateFilePath, name="api_update_file_path"),
 ]
 
 urlpatterns = defaultPatterns + api
