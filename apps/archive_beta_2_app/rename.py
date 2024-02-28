@@ -13,10 +13,10 @@ class Rename:
     def __init__(self, id, base_path, current_name, new_name, rename) -> None:
         self.id = id
         self.rename = rename
-        self.current_name = current_name
+        self.current_name = str(current_name)
         self.new_name = new_name
         self.base_path = Path(base_path)
-        self.path = self.base_path.joinpath(current_name)
+        self.path = self.base_path.joinpath(str(current_name))
         self.new_path = self.base_path.joinpath(new_name)
 
     def renameMovie(self):
@@ -235,30 +235,7 @@ class Rename:
                 "tree",
                 str(self.base_path)
             ]
-            tree = subprocess.run(command, capture_output=True, text=True)
 
-            files_left = int(tree.stdout.split(",")[-1].strip().split(" ")[0])
-
-            if files_left == 0:
-                shutil.rmtree(str(self.base_path))
-            else:
-                error_message = f"[FileBot] Could not delete directory {self.current_name} contains ({files_left}) file/s!"
-                print(colorama.Fore.RED + error_message)
-                return (error_message, "error")
-
-            try:
-                files_left = int(tree.stdout.split(",")[-1].strip().split(" ")[0])
-                if files_left == 0:
-                    shutil.rmtree(str(self.base_path))
-                else:
-                    error_message = f"[FileBot] Could not delete directory {self.base_path} contains ({files_left}) file/s!"
-                    print(colorama.Fore.RED + error_message)
-                    return (error_message, "error")
-            except Exception as e:
-                pass
-                if result.stderr:
-                    return (result.stderr, "error")
-                return (result.stdout, "error")
         else:
             new_file_type = "Season"
             command = [

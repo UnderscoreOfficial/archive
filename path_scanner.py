@@ -14,6 +14,34 @@ import os
 colorama.init(autoreset=True)
 
 
+def isTransferringFiles(target_path):
+    try:
+        # Run the lsof command to list open files in the target directory
+        lsof_command = ["lsof", "+D", target_path]
+        grep_command = ["grep", "^scp"]
+        wc_command = ["wc", "-l"]
+
+        # Run lsof command and pipe the output to grep, then pipe that to wc
+        with open(os.devnull, 'w') as null_file:
+            lsof_process = subprocess.Popen(lsof_command, stdout=subprocess.PIPE, stderr=null_file)
+        grep_process = subprocess.Popen(grep_command, stdin=lsof_process.stdout, stdout=subprocess.PIPE)
+        wc_process = subprocess.Popen(wc_command, stdin=grep_process.stdout, stdout=subprocess.PIPE)
+
+        # Wait for the processes to finish
+        wc_process.wait()
+
+        # Get the output of wc command
+        wc_output = wc_process.stdout.read().decode().strip()
+
+        if int(wc_output) == 0:
+            return False
+        return True
+
+    except Exception as e:
+        print("An error occurred:", str(e))
+        return False
+
+
 class FileChangeHandler(FileSystemEventHandler):
 
     # snake_case needed for watch dog observer
@@ -145,43 +173,53 @@ class FileChangeHandler(FileSystemEventHandler):
                             if season == db_season:
                                 valid = True
                         if valid == False:
-                            current_file_size = sum(
-                                file.stat().st_size for file in path.rglob('*'))
-                            if sum(file.stat().st_size for file in path.rglob('*')) <= current_file_size:
+                            while (True):
+                                if isTransferringFiles(str(path)) == False:
+                                    break
+                                time.sleep(2)
 
-                                cursor.execute("INSERT INTO archive_beta_2_app_newfiles (type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?)",
-                                               ("Season", str(path), season, str(show), "none", False))
-                                connect.commit()
-                                print(
-                                    f"{colorama.Fore.LIGHTCYAN_EX + 'New Season'} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + path.parts[-1].strip()}")
-                                print(colorama.Fore.LIGHTBLACK_EX +
-                                      "Path: ", colorama.Fore.WHITE + str(base_path))
-                                print(colorama.Fore.LIGHTBLACK_EX +
-                                      "Type: ", colorama.Fore.WHITE + "Season")
-                                print(colorama.Fore.LIGHTBLACK_EX + "Season: ",
-                                      colorama.Fore.WHITE + str(season))
+                            if isTransferringFiles(str(path)) == False:
+                                cursor.execute("SELECT * FROM archive_beta_2_app_newfiles WHERE base_path = ? AND current_name = ?", (str(path), season))
+                                new_season_added = cursor.fetchone()
 
-                                cursor.execute(
-                                    "SELECT id, tvdb_id FROM archive_beta_2_app_tvshow WHERE file_path = ?", (str(path),))
-                                tv_show = cursor.fetchone()
+                                if new_season_added == None:
+                                    id = re.sub(r"\D+", "", path.parts[-1].strip().split("-")[-1])
 
+                                    cursor.execute("INSERT INTO archive_beta_2_app_newfiles (id, type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                                   (id, "Season", str(path), season, str(show), "none", False))
+                                    connect.commit()
+                                    print(f"{colorama.Fore.LIGHTCYAN_EX + 'New Season'} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + path.parts[-1].strip()}")
+                                    print(colorama.Fore.LIGHTBLACK_EX + "Path: ", colorama.Fore.WHITE + str(base_path))
+                                    print(colorama.Fore.LIGHTBLACK_EX + "Type: ", colorama.Fore.WHITE + "Season")
+                                    print(colorama.Fore.LIGHTBLACK_EX + "Season: ", colorama.Fore.WHITE + str(season))
 
-                                # response = requests.post(url="http://192.168.1.117:8000/api/rename",
-                                #                          json={
-                                #                              "id": tv_show[1],
-                                #                              "base_path": str(path),
-                                #                              "current_name": season,
-                                #                              "new_name": "none",
-                                #                              "renamed": False,
-                                #                              "type": "Season"
-                                #                          })
-                                # print(response.json())
+                                    cursor.execute(
+                                        "SELECT id, tvdb_id FROM archive_beta_2_app_tvshow WHERE file_path = ?", (str(path),))
+                                    tv_show = cursor.fetchone()
+
+                                    # looks like this is the problem
+                                    response = requests.post(url="http://192.168.1.117:8000/api/rename",
+                                                             json={
+                                                                 "id": tv_show[1],
+                                                                 "base_path": str(path),
+                                                                 "current_name": season,
+                                                                 "new_name": "none",
+                                                                 "renamed": False,
+                                                                 "type": "Season"
+                                                             })
+                                    response = response.json()
+
+                                    if (response == "renamed"):
+                                        print(f"{colorama.Fore.LIGHTCYAN_EX + 'Renamed'} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + path.parts[-1].strip()}")
+                                    else:
+                                        print(f"{colorama.Fore.RED + 'Rename error'} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + path.parts[-1].strip()}")
 
                 cursor.execute(
                     "SELECT * FROM archive_beta_2_app_newfiles WHERE base_path = ? AND name = ?", (f"{base_path}/{show}", str(show)))
                 new_season = cursor.fetchone()
 
-                if new_season is None:
+                # if path.parts is 4 then it is a season
+                if new_season is None and len(path.parts) != 4:
                     try:
                         query = re.search(r"^(.*?) \(\d{4}\)", show).group(1)
                     except Exception:
@@ -444,20 +482,53 @@ def onLoad(directories_to_watch):
                                     if season_number == db_season:
                                         valid = True
                                 if valid == False:
-                                    new_seasons.append(season_number)
-                                    cursor.execute("INSERT INTO archive_beta_2_app_newfiles (type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?)",
-                                                   ("Season", str(path), season_number, "none", "none", False))
-                                    connect.commit()
-                                    print(
-                                        f"{colorama.Fore.LIGHTCYAN_EX + 'New Season'} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + path.parts[-1].strip()}")
-                                    print(colorama.Fore.LIGHTBLACK_EX +
-                                          "Type: ", colorama.Fore.WHITE + "Season")
-                                    print(colorama.Fore.LIGHTBLACK_EX + "Season: ",
-                                          colorama.Fore.WHITE + str(season_number))
+                                    # new_seasons.append(season_number)
+                                    # cursor.execute("INSERT INTO archive_beta_2_app_newfiles (type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?)",
+                                    #                ("Season", str(path), season_number, "none", "none", False))
+                                    # connect.commit()
+                                    # print(
+                                    #     f"{colorama.Fore.LIGHTCYAN_EX + 'New Season'} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + path.parts[-1].strip()}")
+                                    # print(colorama.Fore.LIGHTBLACK_EX +
+                                    #       "Type: ", colorama.Fore.WHITE + "Season")
+                                    # print(colorama.Fore.LIGHTBLACK_EX + "Season: ",
+                                    #       colorama.Fore.WHITE + str(season_number))
+
+                                    cursor.execute("SELECT * FROM archive_beta_2_app_newfiles WHERE base_path = ? AND current_name = ?", (str(path), season_number))
+                                    new_season_added = cursor.fetchone()
+
+                                    if new_season_added == None:
+                                        id = re.sub(r"\D+", "", path.parts[-1].strip().split("-")[-1])
+
+                                        cursor.execute("INSERT INTO archive_beta_2_app_newfiles (id, type, base_path, current_name, name, new_name, renamed) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                                       (id, "Season", str(path), season_number, str(show), "none", False))
+                                        connect.commit()
+                                        print(f"{colorama.Fore.LIGHTCYAN_EX + 'New Season'} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + path.parts[-1].strip()}")
+                                        print(colorama.Fore.LIGHTBLACK_EX + "Path: ", colorama.Fore.WHITE + str(base_path))
+                                        print(colorama.Fore.LIGHTBLACK_EX + "Type: ", colorama.Fore.WHITE + "Season")
+                                        print(colorama.Fore.LIGHTBLACK_EX + "Season: ", colorama.Fore.WHITE + str(season_number))
+
+                                        cursor.execute(
+                                            "SELECT id, tvdb_id FROM archive_beta_2_app_tvshow WHERE file_path = ?", (str(path),))
+                                        tv_show = cursor.fetchone()
+
+                                        response = requests.post(url="http://192.168.1.117:8000/api/rename",
+                                                                 json={
+                                                                     "id": tv_show[1],
+                                                                     "base_path": str(path),
+                                                                     "current_name": season_number,
+                                                                     "new_name": "none",
+                                                                     "renamed": False,
+                                                                     "type": "Season"
+                                                                 })
+                                        response = response.json()
+
+                                        if (response == "renamed"):
+                                            print(f"{colorama.Fore.LIGHTCYAN_EX + 'Renamed'} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + path.parts[-1].strip()}")
+                                        else:
+                                            print(f"{colorama.Fore.RED + 'Rename error'} {colorama.Fore.WHITE}-> {colorama.Fore.GREEN + path.parts[-1].strip()}")
 
                     continue
 
-                # HERE IS WHERE
                 cursor.execute(
                     "SELECT * FROM archive_beta_2_app_newfiles WHERE base_path = ? AND current_name = ?", (str(base_path), str(show)))
                 new_path = cursor.fetchone()

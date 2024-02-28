@@ -423,10 +423,12 @@ def apiRename(request):
         print("RENAMING SERIES")
         results = rename_object.renameTvShow()
 
-
     if results[1] == "renamed":
-        serializer = NewFilesSerializer(results[0], many=False)
-        return Response(serializer.data)
+        if is_season == True:
+            return Response("renamed")
+        else:
+            serializer = NewFilesSerializer(results[0], many=False)
+            return Response(serializer.data)
     return Response("error")
 
 
@@ -809,6 +811,12 @@ def apiCreateTvShowSeason(request, pk: int):
         tv_show_season_serializer_form.save(tv_show_id=tv_show.id)
         tv_show.setTotalSeasons()
         tv_show.setTotalSize()
+
+        try:
+            new_file = NewFiles.objects.get(id=tv_show.tvdb_id)
+            new_file.delete()
+        except NewFiles.DoesNotExist:
+            pass
 
         tv_show_season = get_object_or_404(
             TvShowSeason, tv_show_id=tv_show.id, season=season_data["season"])
