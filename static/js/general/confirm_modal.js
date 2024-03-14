@@ -147,7 +147,11 @@ function confirmTask(id, season, redirect, unacquired, content_type, confirm_typ
                 if (current_url[3].length === 0) {document.querySelector(`#${entry}`).insertAdjacentHTML("beforebegin", "<h2>No new episodes.</h2>")};
     
                 try {
-                    document.querySelector(`#${entry}`).remove();
+                    if (current_url[3] == "home") {
+                        document.querySelector(`#${entry}`).parentElement.remove();
+                    } else {
+                        document.querySelector(`#${entry}`).remove();
+                    }
                 } catch (TypeError) {
                     document.querySelector(`#drive-${id}`).remove();
                 }

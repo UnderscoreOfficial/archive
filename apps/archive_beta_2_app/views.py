@@ -1026,12 +1026,22 @@ def apiDeleteSeason(request, pk: int, season: int) -> Response:
     tv_show_season.delete()
     tv_show.setTotalSeasons()
     tv_show.setTotalSize()
+    try:
+        length = Lengths.objects.get(content_id=tv_show.id, type=tv_show.type)
+        length.delete()
+    except Lengths.DoesNotExist:
+        pass
     return Response(f"{tv_show.name}, Season {season} - successfully deleted!")
 
 
 @ api_view(["DELETE"])
 def apiDeleteTvShow(request, pk: int) -> Response:
     tv_show = get_object_or_404(TvShow, id=pk)
+    try:
+        length = Lengths.objects.get(content_id=tv_show.id, type=tv_show.type)
+        length.delete()
+    except Lengths.DoesNotExist:
+        pass
     tv_show.poster_file.delete()
     tv_show.delete()
     return Response(f"{tv_show.name} - successfully deleted!")
@@ -1040,6 +1050,11 @@ def apiDeleteTvShow(request, pk: int) -> Response:
 @ api_view(["DELETE"])
 def apiDeleteMovie(request, pk: int) -> Response:
     movie = get_object_or_404(Movie, id=pk)
+    try:
+        length = Lengths.objects.get(content_id=movie.id, type=movie.type)
+        length.delete()
+    except Lengths.DoesNotExist:
+        pass
     movie.poster_file.delete()
     movie.delete()
     return Response(f"{movie.name} - successfully deleted!")
@@ -1050,11 +1065,21 @@ def apiDeleteUnacquired(request, type: str, pk: int) -> Response:
     match type:
         case "tv-show":
             tv_show = get_object_or_404(TvShow, id=pk)
+            try:
+                length = Lengths.objects.get(content_id=tv_show.id, type=tv_show.type)
+                length.delete()
+            except Lengths.DoesNotExist:
+                pass
             tv_show.poster_file.delete()
             tv_show.delete()
             return Response(f"{tv_show.name} - successfully deleted!")
         case "movie":
             movie = get_object_or_404(Movie, id=pk)
+            try:
+                length = Lengths.objects.get(content_id=movie.id, type=movie.type)
+                length.delete()
+            except Lengths.DoesNotExist:
+                pass
             movie.poster_file.delete()
             movie.delete()
             return Response(f"{movie.name} - successfully deleted!")
