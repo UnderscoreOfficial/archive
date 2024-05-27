@@ -1,0 +1,1 @@
+This was always at first personal project with a very messy code base writen in vanilla js and django. The core functionality I used was the logging / tracking of shows and movies so I do not plan on working on this or making a proper public relese of this. If intrested use a service like trakt.tv or simkl.com.
